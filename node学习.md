@@ -411,18 +411,16 @@ res.end();
 
 302：临时重定向
 
-## 03-进步一点点学习
+## 03-模块系统
 
-### 1 模块系统
-
-#### 1.1 模块化概念
+### 1 模块化概念
 
 - 文件作用域
 - 通信规则
   - 加载 require
   - 导出 exports
 
-#### 1.2 commonJS 模块规范
+### 2 commonJS 模块规范
 
 在Node中的JavaScript还有一个很重要的概念，模块系统
 
@@ -432,7 +430,7 @@ res.end();
 
 如果一个模块需要直接导出一个成员，而非挂载的方式，则直接导出
 
-##### 1.2.1 加载`require`
+#### 2.1 加载`require`
 
 语法：
 
@@ -517,7 +515,7 @@ require ('fs')
 
   一个项目有且只有一个	node_modules，放在项目根目录中
 
-##### 1.2.2 导出`exports`
+#### 2.2 导出`exports`
 
 - Node中是模块作用域，默认文件中所有的成员只在当前文件模块生效
 - 对于希望可以被其它模块访问的成员，可以把这些公开的成员都挂载到`exports`接口对象中
@@ -562,7 +560,7 @@ module.exports = {
 }
 ```
 
-##### 1.2.3 原理解析
+#### 2.3 原理解析
 
 ```javascript
 console.log(exports === module.exports) // =>true
@@ -602,15 +600,15 @@ exports.add = function(x, y) {
 };
 ```
 
-#### 1.3 npm
+### 3 npm
 
 **npm**：node package manager
 
-##### 1.3.1 npm网站
+#### 3.1 npm网站
 
 > npmjs.com
 
-##### 1.3.2 npm 命令行工具
+#### 3.2 npm 命令行工具
 
 npm的第二层含义就是一个命令行工具，只要你安装了node就已经安装了npm
 
@@ -626,7 +624,7 @@ npm --version
 npm install --global npm
 ```
 
-##### 1.3.3 常用命令
+#### 3.3 常用命令
 
 - npm init
   - npm init -y 可以跳过向导，快速生成
@@ -650,7 +648,7 @@ npm install --global npm
   - 查看指定命令的使用帮助
   - 例如忘记uninstall命令的简写了，这个时候，可以输入`npm uninstall --help`来查看使用帮助
 
-#### 1.4 packag.json
+### 4 packag.json
 
 建议每一个项目都要有一个`package.json`文件（包描述文件，就像产品的说明书一样）
 
@@ -662,3 +660,4 @@ package.json中目前来看，最有用的是`dependencies`选项，可以用来
 
 - 建议每个项目的根目录下都有一个`package.json`文件
 - 建议执行`npm install包名` 的时候都加上 `--save` 这个选项，目的是用来保存依赖项信息
+
