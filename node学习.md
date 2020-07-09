@@ -411,18 +411,16 @@ res.end();
 
 302：临时重定向
 
-## 03-进步一点点学习
+## 03-模块系统
 
-### 1 模块系统
-
-#### 1.1 模块化概念
+### 1 模块化概念
 
 - 文件作用域
 - 通信规则
   - 加载 require
   - 导出 exports
 
-#### 1.2 commonJS 模块规范
+### 2 commonJS 模块规范
 
 在Node中的JavaScript还有一个很重要的概念，模块系统
 
@@ -432,7 +430,7 @@ res.end();
 
 如果一个模块需要直接导出一个成员，而非挂载的方式，则直接导出
 
-##### 1.2.1 加载`require`
+#### 2.1 加载`require`
 
 语法：
 
@@ -445,9 +443,9 @@ var 自定义变量 = require("模块")
 - 执行被加载模块中的代码
 - 得到被加载模块中`exports`导出接口对象
 
-`require`加载规则
+`require`模块查找机制
 
-优先从缓存加载规则
+**1. 优先从缓存加载规则：**
 
 文件main.js        加载a.js和b.js
 
@@ -476,9 +474,48 @@ require('./b.js')
 console.log("b被加载了")
 ```
 
+**2. 核心模块**
 
+核心模块的本质也是文件
 
-##### 1.2.2 导出`exports`
+核心模块文件已经被编译到了二进制文件中了，只需要按照名字来加载就可以了
+
+```javascript
+require ('fs')
+```
+
+**3. 路径形式的文件模块**
+
+`./` 当前目录，不可省略
+
+`../ `上一级目录，不可省略
+
+`.js`后缀名可以省略
+
+`/xxx` 几乎不用
+
+**4. 第三方模块**
+
+- 凡是第三方模块都必须通过 npm 来下载
+
+- 使用的时候就可以通过require('包名‘) 的方式来进行加载才可以使用
+
+- 第三方包和核心模块的名字不一样
+
+- 既不是核心模块，也不是路径形式的模块
+
+  - 先找到当前文件所处目录中的 node_modules 目录
+  - 找到node_modules/art-template/package.json文件 中的main属性
+  - main属性中就记录了 art-template的入口模块，有时候是index.js
+  - 然后加载使用这个第三方包。实际上最终加载的还是文件
+  - 如果package.json文件不存在或者main指定的入口模块有没有，则node会自动查找该目录下的index.js
+  - 也就是说index.js会作为一个默认备选项
+
+  如果以上所有任何条件都不成立，就会进入上一级目录中的node_modules目录查找，如果上一级还没有，则继续往上上一级查找……如果直到当前磁盘根目录还找不到，最后报错：can not find module xxx
+
+  一个项目有且只有一个	node_modules，放在项目根目录中
+
+#### 2.2 导出`exports`
 
 - Node中是模块作用域，默认文件中所有的成员只在当前文件模块生效
 - 对于希望可以被其它模块访问的成员，可以把这些公开的成员都挂载到`exports`接口对象中
@@ -523,7 +560,7 @@ module.exports = {
 }
 ```
 
-##### 1.2.3 原理解析
+#### 2.3 原理解析
 
 ```javascript
 console.log(exports === module.exports) // =>true
@@ -562,4 +599,65 @@ exports.add = function(x, y) {
     return x + y
 };
 ```
+
+### 3 npm
+
+**npm**：node package manager
+
+#### 3.1 npm网站
+
+> npmjs.com
+
+#### 3.2 npm 命令行工具
+
+npm的第二层含义就是一个命令行工具，只要你安装了node就已经安装了npm
+
+可以查看npm版本
+
+```shell
+npm --version
+```
+
+升级npm（自己升级自己）
+
+```shell
+npm install --global npm
+```
+
+#### 3.3 常用命令
+
+- npm init
+  - npm init -y 可以跳过向导，快速生成
+- npm install
+  - 一次性把dependencies选项中的依赖项全部安装
+  - npm i
+- npm install 包名
+  - 只下载
+  - npm i 包名
+- npm install --save 包名
+  - 下载并保存依赖项（package.json文件中的dependencies选项）
+  - npm i -S 包名
+- npm uninstall 包名
+  - 只删除，如果有依赖项会依然保存
+- npm uninstall --save 包名
+  - 删除的同时也会把依赖信息删掉
+  - npm un -S 包名
+- npm help
+  - 查看使用帮助
+- npm 命令 --help
+  - 查看指定命令的使用帮助
+  - 例如忘记uninstall命令的简写了，这个时候，可以输入`npm uninstall --help`来查看使用帮助
+
+### 4 packag.json
+
+建议每一个项目都要有一个`package.json`文件（包描述文件，就像产品的说明书一样）
+
+这个文件可以通过`npm init` 的方式来自动初始化出来
+
+package.json中目前来看，最有用的是`dependencies`选项，可以用来帮我们保存第三方包的依赖信息
+
+如果`node_modules`被误删，只需要：`npm install`就会自动把`package.json`中的`dependencies`中所有的依赖项都下载下来
+
+- 建议每个项目的根目录下都有一个`package.json`文件
+- 建议执行`npm install包名` 的时候都加上 `--save` 这个选项，目的是用来保存依赖项信息
 
