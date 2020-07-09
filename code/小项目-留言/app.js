@@ -2,6 +2,7 @@ var fs = require("fs");
 var http = require("http");
 var url = require("url");
 var template = require("art-template");
+var moment = require('moment');
 
 var comments = [{
     name: "12",
@@ -62,7 +63,9 @@ http
             // 1.获取表单提交的数据：parseObj.query
             var comment = parseObj.query;
             // 2.将日期添加到数据对象中，然后存储在数组中
-            comment.time = "2020.07.09";
+            // comment.time = "2020.07.09";
+            let current_time = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+            comment.time = current_time;
             comments.unshift(comment);
             // 3.让用户重定向跳转到首页。通过服务器让客户端重定向
             // 3.1  设置状态码，状态码设置为302临时重定向

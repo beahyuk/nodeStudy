@@ -6,6 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>留言本</title>
     <link rel="stylesheet" href="../public/bootstrap.css">
+    <style>
+        .left {
+            display: inline-block;
+            padding-right: 40px;
+            width: 400px;
+        }
+        
+        .right {
+            float: right;
+        }
+    </style>
 </head>
 
 <body>
@@ -18,7 +29,8 @@
     <div class="comments container">
         <ul class="list-group">
             {{each comments}}
-            <li class="list-group-item"><span class="left">{{$value.name}}说</span>{{$value.content}}<span class="right">{{$value.time}}</span></li>
+            <li class="list-group-item">
+                <p class="left">用户：{{$value.name}} </p>{{$value.content}}<span class="right">{{$value.time}}</span></li>
             {{/each}}
         </ul>
     </div>
