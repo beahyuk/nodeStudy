@@ -22,7 +22,11 @@
   - 网络服务器的搭建
   - 网络通信
 
-**node.js特性**：事件驱动，异步，轻量和高效
+### node.js特性
+
+- 事件驱动
+- 异步
+- 轻量和高效
 
 **npm** 是绝大多数JavaScript的包
 
@@ -153,7 +157,11 @@ Node为JavaScript提供了很多服务器级别的API，这些API绝大多数都
 
 核心模块需要`require`调用
 
+### 第三方模块
 
+art-template，ejs等等
+
+必须通过npm来下载才可以使用
 
 ###  用户自定义模块
 
@@ -235,7 +243,7 @@ res.setHeader("Content-type","text/html;charset=utf-8");
 
 **ejs**是模板引擎的一种，使用起来简单，而且与express集成良好
 
-可以这么理解，如果说Express中的路由控制方法是MVC中的控制器的话，那么模板就是MVC的视图
+可以这么理解，如果说Express中的路由控制方法是MVC中的控制器的话，那么模板就是MVC的视图（类似于vue中的template吧）
 
 （MVC：model模型，view视图，control控制器）
 
@@ -296,16 +304,262 @@ index.html
 
 ### 留言小项目
 
-#### 留言渲染在首页思路：
+#### 1. 留言渲染在首页思路：
 
 要用apt-template模板引擎，通过读HTML页面，进行数据替换comments数组
 
-#### 表单提交
+#### 2. 表单提交
 
-表单提交的url设定没看清楚
+表单提交的url设定是在表单form中`action`属性设定
 
-+ 获取表单提交的数据：parseObj。query
-+ 生成日期到数据对象中，然后存储到数组中
+```html
+<form action="/comments">
+```
+
+利用`url`核心模块 对提交url(带有？参数)进行解析
+
+```javascript
+// 第二个参数为true表示直接将查询字符串（？后面的字符串）转为一个对象
+var parseObj = url.parse(req.url,true)
+var pathName = parseObj.pathName
+var query = parseObj.query
+```
+
++ 获取表单提交的数据：parseObj.query
++ 将日期添加到数据对象中，然后存储到数组中
 + 让用户重定向跳转到首页/
   + 当用户重新请求/的时候，数组中的数据发生变化，所以用户看到的是新数据
+
+```javascript
+ // 1.获取表单提交的数据：parseObj.query
+var comment = parseObj.query;
+// 2.将日期添加到数据对象中，然后存储在数组中
+comment.time = "2020.07.09";
+comments.unshift(comment);
+// 3.让用户重定向跳转到首页。通过服务器让客户端重定向
+// 3.1  设置状态码，状态码设置为302临时重定向
+res.statusCode = 302;
+// 3.2  在响应头通过location告诉客户端往哪儿重定向
+// 如果客户端发现收到服务器响应的状态码为302，就会自动去响应头找Location
+res.setHeader('Location', '/');
+res.end();
+```
+
+#### 3. 项目注意点
+
+1. bootstrap.css的引用
+
+   一开始引用了不起效
+
+   后来发现是app.js中没有进行public的静态资源引入
+
+2. url路径判断不对
+
+   因为`pathName = parseObj.pathname` 后面的pathname 写成了pathName，被自动补充了，找了好久的bug。
+
+3. 评论提交后不重定向
+
+   评论提交后网页一直转啊转，是因为写完location重定向后，缺少了`res.end()`结束条件
+
+4. form提交地址与写留言地址不同
+
+   form提交地址是`/comments`  主要是对这个地址进行url的解析，pathname主要是为了它成立
+
+   写留言地址是 首页点写留言后 需要跳转的地址，在a标签`href`的地址
+
+   一开始没搞清楚，全写一个，无法判断提交后的地址
+
+5. node获取当前时间
+
+   ```javascript
+   // 1，安装 moment模块
+   npm i moment --save
+   // 2，引入
+   var moment = require('moment');
+   // 3，获取当前时间并格式化
+   var current_time =  moment(Date.now()).format('YYYY-MM-DD HH:mm:ss')
+   console.log(current_time)
+   ```
+
+6. url的判断其实是api
+
+   对url判断，返回不同的响应，其实就是获取不同的API有不一样的接口
+   
+7. art-template的模板语法
+
+   ```html
+   {{each 数组}}
+   
+   <li>{{$value }}</li>
+   
+   {{/each}}
+   ```
+
+   这是art-template模板引擎支持的语法，只能在模板字符串中使用
+
+   
+
+### node的console
+
+在任意目录的cmd中，输入node回车，就是node的console
+
+类似于Python的console
+
+### 状态码301和302
+
+301：永久重定向，浏览器会记住，一般不用
+
+302：临时重定向
+
+## 03-进步一点点学习
+
+### 1 模块系统
+
+#### 1.1 模块化概念
+
+- 文件作用域
+- 通信规则
+  - 加载 require
+  - 导出 exports
+
+#### 1.2 commonJS 模块规范
+
+在Node中的JavaScript还有一个很重要的概念，模块系统
+
+- 模块作用域
+- 使用require方法用来加载模块
+- 使用exports接口对象用来导出模块中的成员
+
+如果一个模块需要直接导出一个成员，而非挂载的方式，则直接导出
+
+##### 1.2.1 加载`require`
+
+语法：
+
+```javascript
+var 自定义变量 = require("模块")
+```
+
+两个作用：
+
+- 执行被加载模块中的代码
+- 得到被加载模块中`exports`导出接口对象
+
+`require`加载规则
+
+优先从缓存加载规则
+
+文件main.js        加载a.js和b.js
+
+```javascript
+require('./a.js')
+require('./b.js')
+
+// 打印结果显示，b只被加载一次
+/**
+ * a被加载了
+ * b被加载了
+ */
+// mian.js中加载b.js时，会看缓存中有无，有的话就不加载了
+```
+
+文件a.js     加载b.js  
+
+```javascript
+console.log("a被加载了")
+require('./b.js')
+```
+
+文件b.js
+
+```javascript
+console.log("b被加载了")
+```
+
+
+
+##### 1.2.2 导出`exports`
+
+- Node中是模块作用域，默认文件中所有的成员只在当前文件模块生效
+- 对于希望可以被其它模块访问的成员，可以把这些公开的成员都挂载到`exports`接口对象中
+
+导出多个成员（必须在对象中）：
+
+```javascript
+exports.a = 22; //数值
+exports.b = "addff"; //字符串
+exports.c = function(x, y) { //函数
+    return x + y
+};
+exports.d = { foo: "lindG" }; //对象
+```
+
+module.exports=... 是直接赋值
+
+导出单个成员（拿到的就是：函数、字符串）：
+
+```javascript
+module.exports = "hello word";
+```
+
+以下情况会覆盖：
+
+```javascript
+module.exports = "hello word";
+//以这个为准，后会覆盖前
+module.exports = function(x, y) {
+    return x + y
+};
+```
+
+也可以导出多个消息：
+
+```javascript
+module.exports = {
+    add: function(x, y) {
+        return x + y
+    },
+    str: "hello lindG"
+}
+```
+
+##### 1.2.3 原理解析
+
+```javascript
+console.log(exports === module.exports) // =>true
+
+exports.foo = "abc"
+
+//等价于
+module.exports.foo = "abc"
+```
+
+**exports 和 module.exports两者的关系：**
+
+1. module.exports 才是真正的接口，在每个js文件中，默认了var exports = module.exports,最终返回给调用的是module.exports而不是exports。 module.exports初始值为一个空对象，而exports为指向module.exports的引用
+
+2. 在其他文件加载require()的时候，返回的是module.exports而不是exports，因此，直接赋值exports常常会出现错误，而赋值为module.exports常常是解决这一问题的折中方法
+
+   ```javascript
+   exports = "abc" // 错误，不可以直接赋值
+   module.exports = 'abc' // 正确
+   ```
+
+3. 所有的exports收集到的属性和方法，都赋值给了module.exports。当然，这个有前提，就是module.exports本身不具备任何属性和方法
+
+   如果，module.exports已经具备了一些属性和方法，那么exports收集来的信息将来会被忽略
+
+```javascript
+//以下输出add和str。忽略exports收集来的信息
+module.exports = {
+    add: function(x, y) {
+        return x + y
+    },
+    str: "hello lindG"
+}
+exports.foo = foo;
+exports.add = function(x, y) {
+    return x + y
+};
+```
 
