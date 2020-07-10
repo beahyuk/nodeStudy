@@ -138,7 +138,8 @@ server.on("request",function(req,res){
           }
       ]  
     };
-    //响应内容只能是二进制数据或者字符串，数字，对象，数组，布尔值都要通过JSON.stringify()转换成字符串
+    //响应内容只能是二进制数据或者字符串，
+    //数字，对象，数组，布尔值都要通过JSON.stringify()转换成字符串
     res.end(JSON.stringify(products))
     
     //一般用这种方式直接结束，不必先写再end
@@ -361,13 +362,15 @@ res.end();
 
    评论提交后网页一直转啊转，是因为写完location重定向后，缺少了`res.end()`结束条件
 
-4. form提交地址与写留言地址不同
+4. form提交地址与写留言地址是不同的
 
    form提交地址是`/comments`  主要是对这个地址进行url的解析，pathname主要是为了它成立
 
    写留言地址是 首页点写留言后 需要跳转的地址，在a标签`href`的地址
 
    一开始没搞清楚，全写一个，无法判断提交后的地址
+
+   **补充：** 如果form提交的方法是POST，那么表单可以不用设置提交地址，与写留言地址一样
 
 5. node获取当前时间
 
@@ -397,7 +400,6 @@ res.end();
 
    这是art-template模板引擎支持的语法，只能在模板字符串中使用
 
-   
 
 ### node的console
 
@@ -413,14 +415,14 @@ res.end();
 
 ## 03-模块系统
 
-### 1 模块化概念
+### 1. 模块化概念
 
 - 文件作用域
 - 通信规则
   - 加载 require
   - 导出 exports
 
-### 2 commonJS 模块规范
+### 2. commonJS 模块规范
 
 在Node中的JavaScript还有一个很重要的概念，模块系统
 
@@ -513,7 +515,7 @@ require ('fs')
 
   如果以上所有任何条件都不成立，就会进入上一级目录中的node_modules目录查找，如果上一级还没有，则继续往上上一级查找……如果直到当前磁盘根目录还找不到，最后报错：can not find module xxx
 
-  一个项目有且只有一个	node_modules，放在项目根目录中
+  一般一个项目有且只有一个	node_modules，放在项目根目录中
 
 #### 2.2 导出`exports`
 
@@ -575,7 +577,13 @@ module.exports.foo = "abc"
 
 1. module.exports 才是真正的接口，在每个js文件中，默认了var exports = module.exports,最终返回给调用的是module.exports而不是exports。 module.exports初始值为一个空对象，而exports为指向module.exports的引用
 
-2. 在其他文件加载require()的时候，返回的是module.exports而不是exports，因此，直接赋值exports常常会出现错误，而赋值为module.exports常常是解决这一问题的折中方法
+2. 在其他文件加载require()的时候，返回的是module.exports而不是exports，因此，直接赋值exports常常会出现错误，而赋值为module.exports常常是解决这一问题的折中方法。
+
+   exports直接赋值相当于 重新定义了
+
+   - 一开始是 var exports = module.exports
+   - 直接复制 exports = "abc"
+   - 这样exports指向的就不是module.exports了，而是指向’abc‘的地址
 
    ```javascript
    exports = "abc" // 错误，不可以直接赋值
@@ -600,7 +608,7 @@ exports.add = function(x, y) {
 };
 ```
 
-### 3 npm
+### 3. npm
 
 **npm**：node package manager
 
@@ -648,7 +656,7 @@ npm install --global npm
   - 查看指定命令的使用帮助
   - 例如忘记uninstall命令的简写了，这个时候，可以输入`npm uninstall --help`来查看使用帮助
 
-### 4 packag.json
+### 4. packag.json
 
 建议每一个项目都要有一个`package.json`文件（包描述文件，就像产品的说明书一样）
 
@@ -661,3 +669,298 @@ package.json中目前来看，最有用的是`dependencies`选项，可以用来
 - 建议每个项目的根目录下都有一个`package.json`文件
 - 建议执行`npm install包名` 的时候都加上 `--save` 这个选项，目的是用来保存依赖项信息
 
+## 04-Express框架
+
+### 0. 修改完代码自动重启：
+
+可以使用一个第三方命名航工具，`nodemon`来帮我们解决频繁修改代码重启服务器问题
+
+`nodemon`是一个基于Node.js开发的一个第三方命令行工具，我们使用的时候需要独立安装
+
+```shell
+npm install --global nodemon
+```
+
+安装完毕后，使用:
+
+```shell
+# 之前命令
+node app.js
+# 使用nodemon后命令
+nodemon app.js
+```
+
+只要通过`nodemon app.js`启动服务，则它会监视你的文件变化，当文件发生变化时，自动帮你重启服务器
+
+**遇到问题：**
+
+使用nodemon时，出现nodemon不是内部或外部命令，也不是可运行的程序
+
+```shell
+E:\workspace\node_study\code\express-demo>npm install nodemon -g
+# 显示安装成功，但是查询代码查不到
+E:\workspace\node_study\code\express-demo>nodemon --version
+'nodemon' 不是内部或外部命令，也不是可运行的程序
+或批处理文件。
+```
+
+解决方法：配置变量
+
+1. 找到nodemon插件，复制路径C:\Users\xueqing\AppData\Roaming\npm
+2. 右击-我的电脑-单击属性-高级系统设置-环境变量
+3. 选择用户变量的path-编辑-将复制的路径添加到path配置
+
+### 1. 起步
+
+#### 1. 安装Express
+
+```shell
+npm install express --save
+```
+
+#### 2. hello word
+
+```js
+var app = require("express");
+app.get("/",function(req,res){
+    res.send("hello world")
+});
+app.listen(3000,function(){
+    console.log("server is running ")
+});
+```
+
+#### 3. 基本路由
+
+路由器
+
+- 请求方法
+- 请求路径
+- 请求处理的函数
+
+get：
+
+```javascript
+// 当你以get方法请求/时，执行对应的函数       
+app.get("/",function(req,res){
+    res.send("hello world")
+});
+```
+
+post:
+
+```javascript
+// 当你以post方法请求/时，执行对应的处理函数
+app.post("/",function(req,res){
+    rers.send("get a post request")
+})
+```
+
+#### 4. 静态服务
+
+```javascript
+/**
+ *  只要这样做了，你就可以直接通过 /public/xx 的方式访问public目录中的所有资源了
+ *  当以/public/ 开头的时候，去 ./public/目录中找到对应的资源
+ * 浏览器输入路径：http://127.0.0.1:3000/public/js/main.js  就可以访问到
+ */
+app.use('/public/', express.static('./public/'));
+
+// 当省略第一个参数时，可以通过省略/public 的方式去访问
+// 浏览器输入路径：http://127.0.0.1:3000/js/main.js  就可以访问到
+app.use(express.static('./public'))
+
+```
+
+### 2. Express与art-template
+
+- [art-template-Github仓库](<https://github.com/aui/art-template>)
+- [art-template官方文档与express](<https://aui.github.io/art-template/express/>)
+
+安装：
+
+```shell
+npm install --save art-template
+npm install --save express-art-template
+```
+
+配置：
+
+```shell
+# 官方是'art'，意思是引入.art文件
+app.engine('art', require('express-art-template'));
+# 正式使用时，一般是html，方便引入html文件
+app.engine('html', require('express-art-template'));
+```
+
+使用：
+
+```javascript
+app.get('/',function(req,res){
+    // express默认会去项目中的views目录找index.html文件
+    res.render('index.html',{
+        user:{
+            name:"lindaG",
+            tags:['art','express']
+        }
+    })
+});
+```
+
+如果希望修改默认的`views`视图渲染存储目录，可以
+
+```javascript
+//注意：第一个参数views千万别写错
+app.set('views',目录路径);
+```
+
+### 3. Express获取表单GET请求参数
+
+Express内置了一个API，可以直接通过`req.query`来获取
+
+```javascript
+var query = req.query
+```
+
+### 4. Express获取表单POST请求体数据
+
+在Express里没有内置获取表单POST请求体的API，这里需要使用一个第三方包：`body-parser`
+
+安装：
+
+```shell
+npm install --save body-parser
+```
+
+配置：
+
+```javascript
+var express = require("express");
+//0.引包
+var bodyParser = require("body-parser");
+
+var app = express();
+
+// 配置body-parser
+// 只要加入这个配置，则在req请求对象上会多出来一个属性：body
+// 也就是说你就可以直接通过req.body 来获取表单 POST 请求体数据了
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({extended:false}));
+// parse application/json
+app.use(bodyParser.json());
+```
+
+使用：
+
+```javascript
+app.use(function(req,res){
+    res.setHeader("Content-type","text/plain");
+    res.write('you posted:\n');
+    //可以通过req.body来获取表单POST请求体数据
+    res.send(Json.stringify(req.body,null,2))
+});
+```
+
+### 5. CRUD案例
+
+#### 1. 起步
+
+- 初始化
+- 安装依赖
+- 模板处理
+
+#### 2. 路由设计
+
+| 请求方法 | 请求路径         | get参数 | post参数            | 备注             |
+| -------- | ---------------- | ------- | ------------------- | ---------------- |
+| GET      | /students        |         |                     | 渲染首页         |
+| GET      | /students/new    |         |                     | 渲染添加学生页面 |
+| POST     | /students/new    |         | name,sex,hobbies    | 处理添加学生请求 |
+| GET      | /students/edit   | id      |                     | 渲染编辑页面     |
+| POST     | /students/edit   |         | id,name,sex,hobbies | 处理编辑请求     |
+| GET      | /students/delete | id      |                     | 处理删除请求     |
+
+#### 3. 提取路由模块
+
+router.js
+
+```javascript
+/**
+ * router.js路由模块
+ * 职责：
+ *    处理路由
+ *    根据不同的请求方法+请求路径设置具体的请求处理函数
+ * 模块职责要单一，不要乱写
+ * 划分模块的目的，就是为了增强代码的可维护性，提高开发效率
+ */
+var express = require("express");
+
+// 1.创建一个路由器
+var router = express.Router();
+
+// 2.把路由都挂载在 router 路由器中
+router.get('/students', function(req, res) {});
+router.get('/students/new', function(req, res) {});
+router.post('/students/new', function(req, res) {});
+router.get('/students/edit', function(req, res) {});
+router.post('/students/edit', function(req, res) {});
+router.get('/students/delete', function(req, res) {});
+
+// 3. 把router导出
+module.exports = router
+```
+
+app.js
+
+```javascript
+var router = require("./router");
+// 挂载路由
+app.use(router)
+```
+
+#### 4. 设计操作数据的API文件模块
+
+```javascript
+/**
+ * 职责：操作文件中的数据，只处理数据，不关心业务
+ */
+var fs = require("fs");
+
+var dbPath = './db.json';
+/**
+ * 获取所有学生的列表
+ */
+exports.find = function(callback) {
+    fs.readFile(dbPath, function(err, data) {
+        if (err) {
+            return callback(err);
+        };
+        callback(null, JSON.parse(data).students)
+    });
+};
+/**
+ * 添加保存学生
+ */
+exports.save = function() {
+
+};
+/**
+ * 更新学生
+ */
+exports.update = function() {
+
+};
+/**
+ * 删除学生
+ */
+exports.delete = function() {
+
+};
+```
+
+##### 项目的坑
+
+- 写完第一个find方法后，不加载页面
+  - 因为我在student.js里复制了好多exports.find()方法，改了其他方法名，还剩下最后一个find方法没改
+  - 因为js没有函数重载的概念，所以最后一个会覆盖第一个，一直为空。
+  - 找了好久的bug…… 发现是这个坑，无语
