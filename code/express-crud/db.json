@@ -1,0 +1,9 @@
+{
+    "students": [
+        { "id": 1, "name": "linda", "sex": 0, "hobbies": "sing,dance,game" },
+        { "id": 2, "name": "linda", "sex": 0, "hobbies": "sing,dance,game" },
+        { "id": 3, "name": "linda", "sex": 0, "hobbies": "sing,dance,game" },
+        { "id": 4, "name": "linda", "sex": 0, "hobbies": "sing,dance,game" },
+        { "id": 5, "name": "linda", "sex": 0, "hobbies": "sing,dance,game" }
+    ]
+}
