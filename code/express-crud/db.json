@@ -1,9 +1,1 @@
-{
-    "students": [
-        { "id": 1, "name": "linda", "sex": 0, "hobbies": "sing,dance,game" },
-        { "id": 2, "name": "linda", "sex": 0, "hobbies": "sing,dance,game" },
-        { "id": 3, "name": "linda", "sex": 0, "hobbies": "sing,dance,game" },
-        { "id": 4, "name": "linda", "sex": 0, "hobbies": "sing,dance,game" },
-        { "id": 5, "name": "linda", "sex": 0, "hobbies": "sing,dance,game" }
-    ]
-}
+{"students":[{"name":"是的","sex":"男","hobbies":"是的","id":1},{"name":"33","sex":"女","hobbies":"23","id":2},{"name":"55","sex":"女","hobbies":"5qe","id":3}]}

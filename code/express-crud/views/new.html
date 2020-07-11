@@ -1,3 +1,11 @@
+<!--
+ * @Author: your name
+ * @Date: 2020-07-11 11:07:06
+ * @LastEditTime: 2020-07-11 15:52:37
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \code\express-crud\views\new.html
+-->
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -68,43 +76,25 @@
                 </ul>
             </div>
             <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-                <h1 class="page-header">Dashboard</h1>
-
-                <div class="row placeholders">
-                    {{each fruits}}
-                    <div class="col-xs-6 col-sm-3 placeholder">
-                        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-                        <h4>{{$value}}</h4>
-                        <span class="text-muted">Something else</span>
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="">姓名</label>
+                        <input name="name" type="text" class="form-control" id="" placeholder="姓名">
                     </div>
-                    {{/each}}
-                </div>
-
-                <h2 class="sub-header">Section title</h2>
-                <a class="btn btn-success" href="">添加学生</a>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>id</th>
-                                <th>姓名</th>
-                                <th>性别</th>
-                                <th>爱好</th>
-                                <th>编辑</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{each students}}
-                            <tr>
-                                <td>{{$value.id}}</td>
-                                <td>{{$value.name}}</td>
-                                <td>{{$value.sex}}</td>
-                                <td>{{$value.hobbies}}</td>
-                            </tr>
-                            {{/each}}
-                        </tbody>
-                    </table>
-                </div>
+                    <div>
+                        <label class="radio-inline">
+                        <input type="radio" name="sex" id="" value="男"> 男
+                      </label>
+                        <label class="radio-inline">
+                        <input type="radio" name="sex" id="" value="女"> 女
+                      </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="">爱好</label>
+                        <input name="hobbies" type="text" class="form-control" id="">
+                    </div>
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </form>
             </div>
         </div>
     </div>
