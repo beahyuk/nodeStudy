@@ -1032,3 +1032,23 @@ exports.delete = function() {
 
     
 
+## 05-MongoDB
+
+### 00-回调函数
+
+不成立的情况：
+
+```javascript
+function add(x, y) {
+    console.log(1);
+    setTimeout(() => {
+        console.log(2);
+        var ret = x + y;
+        return ret;
+    }, 100);
+    console.log(3);
+    // 到这里执行结束，不会等到前面的定时器，所以直接就返回了默认值undefined
+}
+console.log(add(4, 2)) //undefined
+```
+
