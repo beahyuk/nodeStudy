@@ -1,7 +1,7 @@
 /*
  * @Author: Xue Qing
  * @Date: 2020-07-11 11:07:06
- * @LastEditTime: 2020-07-11 22:18:03
+ * @LastEditTime: 2020-07-11 22:33:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \code\express-crud\student.js
@@ -95,7 +95,7 @@ exports.update = function(student, callback) {
         for (const key in student) {
             oriData[key] = student[key];
         };
-        let dataStr = JSON.stringify({ students });
+        let dataStr = JSON.stringify({ students: students });
         fs.writeFile(dbPath, dataStr, function(err, data) {
             if (err) {
                 return callback(err);

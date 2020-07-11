@@ -1,1 +1,21 @@
-{"students":[{"name":"是的","sex":"男","hobbies":"是的","id":1},{"name":"33","sex":"女","hobbies":"23","id":2},{"name":"55","sex":"女","hobbies":"5qe","id":3}]}
+{
+    "students": [{
+            "name": "33",
+            "sex": "女",
+            "hobbies": "23",
+            "id": 1
+        },
+        {
+            "name": "sd",
+            "sex": "女",
+            "hobbies": "sd",
+            "id": 2
+        },
+        {
+            "name": "徐晓晓",
+            "sex": "女",
+            "hobbies": "学习",
+            "id": 3
+        }
+    ]
+}
