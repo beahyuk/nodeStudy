@@ -671,7 +671,7 @@ package.json中目前来看，最有用的是`dependencies`选项，可以用来
 
 ## 04-Express框架
 
-### 0. 修改完代码自动重启：
+### 0. 修改完代码自动重启
 
 可以使用一个第三方命名航工具，`nodemon`来帮我们解决频繁修改代码重启服务器问题
 
@@ -958,9 +958,77 @@ exports.delete = function() {
 };
 ```
 
-##### 项目的坑
+#### 5.项目的坑
 
 - 写完第一个find方法后，不加载页面
   - 因为我在student.js里复制了好多exports.find()方法，改了其他方法名，还剩下最后一个find方法没改
   - 因为js没有函数重载的概念，所以最后一个会覆盖第一个，一直为空。
   - 找了好久的bug…… 发现是这个坑，无语
+
+- 点击其中一个编辑后，获取不到点击的id值，页面空白
+
+  ```shell
+  id: undefined
+  undefined
+  ```
+
+  - index.html 中需要对编辑和删除增加?id=，以便获得query值
+
+    ```html
+    <tbody>
+        {{each students}}
+        <tr>
+            <td>{{$value.id}}</td>
+            <td>{{$value.name}}</td>
+            <td>{{$value.sex}}</td>
+            <td>{{$value.hobbies}}</td>
+            <td>
+                <a class="btn btn-info" href="/students/edit?id={{$value.id}}">编辑</a>
+                <a class="btn btn-danger" href="/students/delete?id={{$value.id}}">删除</a>
+            </td>
+        </tr>
+        {{/each}}
+    </tbody>
+    ```
+
+- 获取id后,render出来循环四个表单,获得的信息是一个人的
+
+  - ```shell
+    router访问到的 1
+    id: 1
+    学生信息为： { id: 1, name: 'linda', sex: 0, hobbies: 'sing,dance,game' }
+    ```
+
+  - 将edit.html里的each循环删掉，直接引用{{student.name}}，{{student.sex}}，{{student.hobbies}}
+
+- 进入编辑页面后，性别无法呈现原信息
+
+  - 在edit.html添加一段script脚本，用来判断性别，从而给单选radio一个checked状态
+
+  - ```html
+        <script>
+            var sex = "{{student.sex}}";
+            var check = function() {
+                var xb = document.getElementsByName("sex");
+                if (sex === "男") {
+                    xb[0].checked = "checked"
+                } else if (sex === "女") {
+                    xb[1].checked = "checked"
+                }
+            }
+            check()
+        </script>
+    ```
+
+- db.json数据总是出错，导致执行方法时，数组找不到报错
+
+  - 因为对splice()方法不熟悉，所以不小心把数据全删除了 
+
+  - 还有一个是，把所有学生转成字符串，最后保存到数据文件中时，总是忽略{}，导致db.json文件中的数据格式出错，不再是对象 形式
+
+    ```javascript
+     let dataStr = JSON.stringify({students});
+    ```
+
+    
+
