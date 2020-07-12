@@ -669,6 +669,22 @@ package.json中目前来看，最有用的是`dependencies`选项，可以用来
 - 建议每个项目的根目录下都有一个`package.json`文件
 - 建议执行`npm install包名` 的时候都加上 `--save` 这个选项，目的是用来保存依赖项信息
 
+#### 4.1 package.json和package-lock.json
+
+npm  5以前是不会有`package-lock.json`这个文件的，npm 5 之后才有
+
+当你安装包的时候，npm都会生成或更新`package-lock.json`这个文件。
+
+- npm 5 以后的版本安装包不需要加`--save`参数，它会自动保存依赖信息
+- 当你安装包的时候，会自动创建或者是更新`package-lock.json`这个文件
+- `package-lock.json`这个文件会保存`node-modules`中所有包的信息（版本，下载地址）
+  - 这样的话，重新`npm install`的时候速度就可以提升
+- 从文件来看，有一个`lock`称之为锁
+  - 这个`lock`是用来锁定版本的
+  - 如果项目依赖了`1.1.1`版本，如果你重新install 其实会下载最新版本，而不是1.1.1
+  - 我们的目的就是希望可以锁定1.1.1这个版本
+  - 所以这个`package-lock.json`这个文件的另一个作用就是锁定版本号，防止自动升级新版
+
 ## 04-Express框架
 
 ### 0. 修改完代码自动重启
@@ -1030,11 +1046,299 @@ exports.delete = function() {
      let dataStr = JSON.stringify({students});
     ```
 
-    
 
 ## 05-MongoDB
 
-### 00-回调函数
+### 1. 关系型数据库和非关系型数据库
+
+表就是关系，或者说表与表之间存在关系
+
+- 所有的关系型数据库都需要通过`sql`语言来操作
+- 所有的关系型数据库在操作之前都需要设计表结构
+- 而且数据表还支持约束
+  - 唯一的，主键，默认值，非空
+- 非关系型数据库就是key-value对儿
+- 但是MOngoDB是最像关系型数据库的非关系型数据库
+  - 数据库 -》 数据库
+  - 数据表 -》 集合（数组）
+  - 表记录 -》（文档对象）
+- MongoDB不需要设计表结构
+
+### 2.  安装
+
+- 下载（菜鸟网站有地址）
+- 安装
+- 配置环境变量
+- 最后输入`mongod --version`测试是否安装成功
+
+### 3. 启动和关闭数据库
+
+启动：
+
+```shell
+# mongodb 默认使用执行 mongod 命令所处盘符根目录下的/data/db 作为自己的数据存储目录
+# 所以在第一次执行该命令之前先自己手动新建一个 /data/db
+# 新版本好像会在安装软件时自动创建了data/db文件夹
+mongo
+```
+
+如果想要修改默认的数据存储目录，可以：
+
+```shell
+mongo --dbpath = 数据存储目录路径
+```
+
+停止：
+
+```shell
+在开启服务的控制台，直接 ctrl+c 即可停止
+或者直接关闭开启服务的控制台也可以
+```
+
+### 4. 连接和退出数据库
+
+连接：
+
+```shell
+# 该命令默认连接本机的 MongoDB 服务
+mongo
+```
+
+退出：
+
+```shell
+# 在连接状态输入 exit 退出连接
+exit
+```
+
+### 5. 基本命令
+
+- `show dbs`
+  - 查看显示所有数据库
+- `use 数据库名称`
+  - 切换到指定的数据（如果没有会新建）
+- 插入数据
+
+### 6. 在Node中如何操作MongoDB数据
+
+使用第三方包 mongoose
+
+- 官网：https://mongoosejs.com/
+- 官方指南：https://mongoosejs.com/docs/guide.html
+- 官方API文档：https://mongoosejs.com/docs/api.html
+- 官方操作方法：https://mongoosejs.com/docs/models.html
+
+#### 1. MongoDB数据库的基本概念
+
+- 可以有多个数据库
+
+- 一个数据库中可以有多个集合（表）
+
+- 一个集合中可以有多个文档（表记录）
+
+- 文档结构很灵活，没有任何限制
+
+- MongoDB非常灵活，不需要像MySQL一样先创建数据库，表，设计表结构
+
+  - 在这里只需要：当你需要插入数据的时候，只需要指定哪个数据库的哪个集合操作就可以
+  - 一切都由MongoDB来帮你完成建库建表事
+
+  ```json
+  {
+      qq:{
+          user:[
+              {name:"zs",age:12},
+              {name:"zs",age:12},
+              {name:"zs",age:12}
+          ],
+          products:[
+          
+          ],
+          ……
+      },
+      taobao:{},
+      baidu:{}
+  }
+  ```
+
+#### 2. 起步
+
+安装：
+
+```shell
+npm i mongoose
+```
+
+hello world:
+
+```javascript
+const mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost:27017/test', {useNewUrlParser: true, useUnifiedTopology: true});
+
+const Cat = mongoose.model('Cat', { name: String });
+
+const kitty = new Cat({ name: 'Zildjian' });
+kitty.save().then(() => console.log('meow'));
+```
+
+#### 3. 官方指南
+
+##### 3.1 设计Schema发布Model
+
+```javascript
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+// 1.连接数据库
+// 指定连接的数据库不需要存在，当你插入第一条数据之后就会自动创建
+mongoose.connect('mongodb://localhost/itcast', { useNewUrlParser: true, useUnifiedTopology: true });
+
+// 2.设计文档结构（表结构）
+// 字段名称就是表结构中的属性名称
+// 约束的目的是为了保证数据的完整性，不要有脏数据
+var userSchema = new Schema({
+    username: {
+        type: String,
+        required: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    email: {
+        type: String
+    }
+});
+// 3.将文档结构发布为模型
+// mongoose.model 方法就是用来将一个架构发布为model
+// 第一个参数：传入一个大写名词单数字符串用来表示你的数据库名称
+//            mongoose会自动将大写名词的字符串生成 小写复数  的集合名称
+//            例如这里的 User 最终会变成 users 集合名称
+// 第二个参数：架构Schema
+// 返回值：模型架构函数
+var User = mongoose.model('User', userSchema);
+// 4.当我们有了模型构造函数之后，就可以使用这个构造函数对users集中的数据增删改查了
+```
+
+##### 3.2 增加数据
+
+```javascript
+// 增加数据
+var admin = new User({
+    username: 'admin',
+    password: '12324',
+    email: 'admin@admin.com'
+});
+
+admin.save(function(err, ret) {
+    if (err) {
+        console.log(err);
+    };
+    console.log("添加成功");
+    console.log(ret)
+});
+```
+
+##### 3.3 查询数据
+
+查询所有:
+
+```javascript
+// 查询数据
+User.find( function(err, ret) {
+    if (err) {
+        console.log("查询失败", err)
+    } else {
+        console.log("查询成功", ret)
+    };
+});
+```
+
+按条件查询所有：
+
+```javascript
+// 查询数据
+User.find({
+    username: 'zs'
+}, function(err, ret) {
+    if (err) {
+        console.log("查询失败", err)
+    } else {
+        console.log("查询成功", ret)
+    };
+});
+```
+
+按条件查询单个：结果为对象
+
+```java
+// 查出的是对象，find()查出的是数组
+User.findOne({ username: 'admin' }, function(err, ret) {
+    if (err) {
+        console.log("查询失败");
+    };
+    console.log("查询成功", ret)
+});
+```
+
+
+
+##### 3.4 更新数据
+
+根据条件更新所有：
+
+```javascript
+Model.update(conditons,doc,[options],[callback])
+```
+
+根据指定条件更新一个：
+
+``` javas
+Model.findOneAndUpdate([conditions],[update],[options],[callback])
+```
+
+根据id更新一个：
+
+```javascript
+// 更新数据
+User.findByIdAndUpdate('5f0b031985a5a2101c0b0b42', { password: '1111' }, function(err, ret) {
+    if (err) {
+        console.log('update fail', err);
+    };
+    console.log('update success ', ret)
+});
+```
+
+
+
+##### 3.5 删除数据
+
+根据条件删除所有：
+
+```javascript
+// 删除数据
+User.remove({ username: 'admin' }, function(err, ret) {
+    if (err) {
+        console.log('fail', err);
+    };
+    console.log("delete success", ret)
+})
+```
+
+根据条件删除一个：
+
+```javascript
+Model.findOneAndRemove(conditions, options, callback) 
+```
+
+根据id删除一个
+
+```javascript
+Model.findByIdAndRemove(id, options, callback)
+```
+
+## 06-异步编程
+
+### 回调函数
 
 不成立的情况：
 
@@ -1052,3 +1356,61 @@ function add(x, y) {
 console.log(add(4, 2)) //undefined
 ```
 
+回调函数
+
+```javascript
+function add(x, y, callback) {
+    console.log(1);
+    setTimeout(() => {
+        console.log(2);
+        var ret = x + y;
+        callback(ret)
+    }, 1000);
+    console.log(3);
+};
+add(2, 4, function(ret) {
+    console.log(ret)
+})
+```
+
+#### 封装ajax
+
+[XMLHttpRequest方法使用](https://zh.javascript.info/xmlhttprequest)
+
+基于原生XMLHTTPRequest封装get方法：
+
+```javascript
+function get(url, callback) {
+    // 1.创建一个new XMLHttpRequest对象
+    let xhr = new XMLHttpRequest();
+    xhr.responseType = 'json';
+    // 2.配置，请求方法，URL
+    xhr.open("GET", url, true);
+    // 3.通过网络发送请求
+    xhr.send();
+    // 4.当接收到响应后，将调用此函数
+    xhr.onload(function() {
+        callback(xhr.response)
+    });
+};
+get('./db.json', function(ret) {
+    console.log(ret)
+})
+```
+
+## 其他
+
+### AMD，CMD，CommonJS
+
+- JavaScript天生不支持模块化
+  - require，exports这些是node.js才有的
+- 在Node这个环境中对JavaScript进行了特殊的模块化支持 CommonJS
+- 在浏览器中也可以像在Node中的模块一样来进行编程
+  - `<script>`标签来引用加载，而且还必须考虑加载的顺序问题
+  - require.js 第三方库      AMD
+  - sea.js        第三方库      CMD
+
+- 无论是CommonJS，AMD，CMD ES6modules (官方规范)
+  - 都是为了解决JavaScript的模块化问题
+  - CommonJS，AMD，CMD都是民间
+  - EcmaScript是官方规范定义
