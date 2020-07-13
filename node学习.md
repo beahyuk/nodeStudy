@@ -1616,6 +1616,95 @@ pReadFile('./callback-hell/a.txt')
     })
 ```
 
+
+
+## 09-中间件
+
+### 1. 中间件
+
+express中的中间件：http://expressjs.com/en/guide/using-middleware.html
+
+中间件的本质就是一个请求处理方法，我们把用户从请求到响应的整个过程分发到多个中间件去处理，这样做的目的是提高代码的灵活性，动态可扩展的
+
+#### 1.1 应用程序级别中间件
+
+万能匹配（不关心任何请求路径和请求方法）：
+
+````javascript
+app.use(function(req,res,next){
+    console.log('Time',Date.now())
+    next()
+})
+````
+
+只要是以'/xxx/'开头的：
+
+```javascript
+app.use('/a',function(req,res,next){
+    console.log('Time:',Date.now())
+    next()
+})
+```
+
+#### 1.2 路由级别中间件
+
+get:
+
+```javascript
+app.get('/',function(req,res){
+    req.send('hello world')
+})
+```
+
+post:
+
+```javascript
+app.post('/',function(req,res){
+    res.send('Got a POST request')
+})
+```
+
+put:
+
+```javascript
+app.put('/user',function(req,res){
+    res.send('Got a PUT request at /user')
+})
+```
+
+delete:
+
+```javascript
+app.delete('/user',function(req,res){
+    res.send('Got a Delete request at /user')
+})
+```
+
+#### 1.3 错误处理中间件
+
+```javascript
+app.use(function(err,req,res,next){
+    console.error(err.stack)
+    res.status(500).send("something broke!")
+})
+```
+
+#### 1.4 内置中间件
+
+- express.static
+- express.json
+- express.urlencoded
+
+#### 1.5 第三方中间件
+
+> http://expressjs.com/en/resources/middleware.html
+
+- body-parser
+- compression
+- cookie-parser
+- response-time
+- session
+
 ## 案例总结
 
 model 文件夹里存放数据模型，schema
