@@ -295,7 +295,7 @@ index.html
 * 服务端渲染其实就是在服务端使用模板引擎
 * 模板引擎最早诞生于服务端，后来才发展到了前端 
 
-服务端渲染和客户端渲染的区别
+**服务端渲染和客户端渲染的区别**
 
 ### 静态资源存放
 
@@ -583,7 +583,7 @@ module.exports.foo = "abc"
 
    - 一开始是 var exports = module.exports
    - 直接复制 exports = "abc"
-   - 这样exports指向的就不是module.exports了，而是指向’abc‘的地址
+   - 这样exports指向的就不是module.exports了，而是指向’abc‘的地址，所以exports不可以直接赋值
 
    ```javascript
    exports = "abc" // 错误，不可以直接赋值
@@ -634,7 +634,7 @@ npm install --global npm
 
 #### 3.3 常用命令
 
-- npm init
+- npm init（新建项目后用）
   - npm init -y 可以跳过向导，快速生成
 - npm install
   - 一次性把dependencies选项中的依赖项全部安装
@@ -685,7 +685,60 @@ npm  5以前是不会有`package-lock.json`这个文件的，npm 5 之后才有
   - 我们的目的就是希望可以锁定1.1.1这个版本
   - 所以这个`package-lock.json`这个文件的另一个作用就是锁定版本号，防止自动升级新版
 
-## 04-Express框架
+## 04-path路径操作模块
+
+官方文档：<https://nodejs.org/dist/latest-v14.x/docs/api/path.html>
+
+- `path.basename`
+
+  - 获取一个路径的文件名（默认包含扩展名）
+
+- `path.extname`
+
+  - 获取一个路径中的扩展名部分
+
+- `path.parse`
+
+  - 把一个路径转为对象
+    - root 根路径
+    - dir 目录
+    - base包含后缀名的文件名
+    - ext 后缀名
+    - name 不包含后缀名的文件名
+
+- `path.join`
+
+  - 当你需要进行路径拼接的时候，推荐使用这个方法
+
+  - ```javascript
+    fs.readFile(path.join(__dirname,'./a.txt'),'utf-8',function(){})
+    ```
+
+- `path.isAbsolute`
+
+  - 判断一个路径是否是绝对路径
+
+## 05-Node中其他成员
+
+在每个模块中，除了`require`，`exports`等模块相关API之外，还有两个特殊的成员：
+
+- `__dirname` **动态获取** 可以用来获取当前文件模块所属目录的绝对路径
+- `__filename`**动态获取** 可以用来获取当前文件的绝对路径
+- `__dirname`和`__filename`是不受执行node命令所属路径影响的
+
+在文件操作中，使用相对路径是不可靠的，因为在Node中文件操作的路径被设计为相对于执行node命令所处的路径（不是bug，这样设计是有使用场景的）
+
+为了解决这个问题，很简单，只需要把相对路径变为绝对路径就可以了
+
+那这里我们就可以使用`__dirname`或者`__filename`来帮我们解决这个问题
+
+在拼接路径的过程中，为了避免手动拼接带来的一些低级错误，所以推荐多使用`path.join()`来辅助拼接
+
+所以为了避免刚才所描述这个问题，大家以后在文件操作中使用的相对路径都统一转换为 **动态的绝对路径**
+
+> 补充：模块中的路径标识和这里的路径没有关系，不受影响（相对于文件模块）
+
+## 06-Express框架
 
 ### 0. 修改完代码自动重启
 
@@ -774,6 +827,8 @@ app.post("/",function(req,res){
 
 #### 4. 静态服务
 
+在express中引入静态资源：
+
 ```javascript
 /**
  *  只要这样做了，你就可以直接通过 /public/xx 的方式访问public目录中的所有资源了
@@ -785,6 +840,8 @@ app.use('/public/', express.static('./public/'));
 // 当省略第一个参数时，可以通过省略/public 的方式去访问
 // 浏览器输入路径：http://127.0.0.1:3000/js/main.js  就可以访问到
 app.use(express.static('./public'))
+
+// 后面的'./public'是文件路径，前面'/public'是浏览器地址路径添加
 
 ```
 
@@ -977,7 +1034,7 @@ exports.delete = function() {
 #### 5.项目的坑
 
 - 写完第一个find方法后，不加载页面
-  - 因为我在student.js里复制了好多exports.find()方法，改了其他方法名，还剩下最后一个find方法没改
+  - 因为我在student.js里复制了好多exports.find()方法，其他的改了方法名，还剩下最后一个find方法没改
   - 因为js没有函数重载的概念，所以最后一个会覆盖第一个，一直为空。
   - 找了好久的bug…… 发现是这个坑，无语
 
@@ -1007,7 +1064,7 @@ exports.delete = function() {
     </tbody>
     ```
 
-- 获取id后,render出来循环四个表单,获得的信息是一个人的
+- 点击 编辑后，获取id后,render出来循环四个表单,获得的信息是一个人的
 
   - ```shell
     router访问到的 1
@@ -1047,7 +1104,7 @@ exports.delete = function() {
     ```
 
 
-## 05-MongoDB
+## 07-MongoDB
 
 ### 1. 关系型数据库和非关系型数据库
 
@@ -1067,9 +1124,14 @@ exports.delete = function() {
 ### 2.  安装
 
 - 下载（菜鸟网站有地址）
+
 - 安装
+
+  安装步骤：<https://www.runoob.com/mongodb/mongodb-window-install.html>
+
 - 配置环境变量
-- 最后输入`mongod --version`测试是否安装成功
+
+- 最后输入`mongo --version`测试是否安装成功
 
 ### 3. 启动和关闭数据库
 
@@ -1118,6 +1180,10 @@ exit
 - `use 数据库名称`
   - 切换到指定的数据（如果没有会新建）
 - 插入数据
+- `show collections`或 `show tables`命令
+  - 查看已有集合
+- `db.user.find() `user是集合名
+  - 查看已插入文档
 
 ### 6. 在Node中如何操作MongoDB数据
 
@@ -1126,7 +1192,8 @@ exit
 - 官网：https://mongoosejs.com/
 - 官方指南：https://mongoosejs.com/docs/guide.html
 - 官方API文档：https://mongoosejs.com/docs/api.html
-- 官方操作方法：https://mongoosejs.com/docs/models.html
+- 官方操作方法：<https://mongoosejs.com/docs/api/model.html>
+  - 增查删改等方法
 
 #### 1. MongoDB数据库的基本概念
 
@@ -1270,7 +1337,7 @@ User.find({
 
 按条件查询单个：结果为对象
 
-```java
+```javascript
 // 查出的是对象，find()查出的是数组
 User.findOne({ username: 'admin' }, function(err, ret) {
     if (err) {
@@ -1279,8 +1346,6 @@ User.findOne({ username: 'admin' }, function(err, ret) {
     console.log("查询成功", ret)
 });
 ```
-
-
 
 ##### 3.4 更新数据
 
@@ -1308,8 +1373,6 @@ User.findByIdAndUpdate('5f0b031985a5a2101c0b0b42', { password: '1111' }, functio
 });
 ```
 
-
-
 ##### 3.5 删除数据
 
 根据条件删除所有：
@@ -1336,7 +1399,7 @@ Model.findOneAndRemove(conditions, options, callback)
 Model.findByIdAndRemove(id, options, callback)
 ```
 
-## 06-异步编程
+## 08-异步编程
 
 ### 回调函数
 
@@ -1398,6 +1461,165 @@ get('./db.json', function(ret) {
 })
 ```
 
+### Promise
+
+callback hell 回调地狱，一层一层嵌套
+
+无法保证顺序的代码：
+
+```javascript
+var fs = require('fs');
+
+fs.readFile('a.txt', 'utf-8', function(err, data) {
+    if (err) {
+        return console.log(err);
+    };
+    console.log(data)
+});
+fs.readFile('b.txt', 'utf-8', function(err, data) {
+    if (err) {
+        return console.log(err);
+    };
+    console.log(data)
+});
+fs.readFile('c.txt', 'utf-8', function(err, data) {
+    if (err) {
+        return console.log(err);
+    };
+    console.log(data)
+});
+```
+
+通过回调嵌套的方式来保证顺序：
+
+```javascript
+var fs = require('fs');
+
+fs.readFile('a.txt', 'utf-8', function(err, data) {
+    if (err) {
+        // return console.log(err);
+        throw err
+    };
+    console.log(data);
+    fs.readFile('b.txt', 'utf-8', function(err, data) {
+        if (err) {
+            return console.log(err);
+        };
+        console.log(data);
+        fs.readFile('c.txt', 'utf-8', function(err, data) {
+            if (err) {
+                return console.log(err);
+            };
+            console.log(data)
+        });
+    });
+});
+```
+
+Promise相当于一个容器，里面放了一个异步任务
+
+使用Promise保证顺序：
+
+```javascript
+var fs = require('fs');
+
+// 在EcmaScript 6中新增了一个API Promise
+// Promise 是一个构造函数
+// 创建Promise 容器
+//   Promise 容器一旦创建，就开始执行里面的代码
+var p1 = new Promise(function(resolve, reject) {
+    // 读文件是承诺容器里的任务
+    fs.readFile('./callback-hell/a.txt', 'utf-8', function(err, data) {
+        if (err) {
+            // 承诺容器中的任务失败
+            // 调用reject 就相当于调用了then方法里的第二个参数函数
+            reject(err);
+        };
+        // 承诺容器中的任务成功
+        // 调用rresolve 就相当于调用了then方法里的第一个参数函数
+        resolve(data)
+    });
+});
+
+var p2 = new Promise(function(resolve, reject) {
+    fs.readFile('./callback-hell/b.txt', 'utf-8', function(err, data) {
+        if (err) {
+            reject(err);
+        };
+        resolve(data)
+    });
+});
+var p3 = new Promise(function(resolve, reject) {
+    fs.readFile('./callback-hell/c.txt', 'utf-8', function(err, data) {
+        if (err) {
+            reject(err);
+        };
+        resolve(data)
+    });
+});
+
+// P1就是那个承诺
+// 当P1执行完后,就开始执行(then)里的操作
+// then(function(data){},function(err){}) 里面接收的是两个函数
+// then方法接收的function是容器中的resolve函数和reject函数
+p1.
+then(function(data) {
+        console.log(data);
+        return p2
+    }, function(err) {
+        console.log(err);
+    })
+    .then(function(data) {
+        console.log(data);
+        return p3
+    }, function(err) {
+        console.log(err)
+    })
+    .then(function(data) {
+        console.log(data)
+    })
+```
+
+封装Promise版本的`readFile`
+
+```javascript
+var fs = require('fs');
+const { resolve } = require('path');
+const { cpuUsage } = require('process');
+
+function pReadFile(path) {
+    return new Promise((resolve, reject) => {
+        fs.readFile(path, 'utf-8', function(err, data) {
+            if (err) {
+                reject(err);
+            };
+            resolve(data);
+        });
+    });
+};
+
+pReadFile('./callback-hell/a.txt')
+    .then(function(data) {
+        console.log(data);
+        return pReadFile('./callback-hell/b.txt');
+    }, function(err) {
+        console.log(err)
+    })
+    .then(function(data) {
+        console.log(data);
+        return pReadFile('./callback-hell/c.txt');
+    }, function(err) { console.log(err) })
+    .then(function(data) {
+        console.log(data)
+    }, function(err) {
+        console.log(err)
+    })
+```
+
+## 案例总结
+
+model 文件夹里存放数据模型，schema
+
 ## 其他
 
 ### AMD，CMD，CommonJS
@@ -1410,7 +1632,65 @@ get('./db.json', function(ret) {
   - require.js 第三方库      AMD
   - sea.js        第三方库      CMD
 
-- 无论是CommonJS，AMD，CMD ES6modules (官方规范)
+- 无论是CommonJS，AMD，CMD ES6 modules (官方规范)
   - 都是为了解决JavaScript的模块化问题
   - CommonJS，AMD，CMD都是民间
   - EcmaScript是官方规范定义
+
+### 接受返回数据类型总结
+
+#### 发送类型：
+
+- res.end()  响应内容只能是二进制数据或者字符串
+- template.render() 渲染数据格式是字符串
+- callback() 返回的是对象类型或数组类型，是需要的类型
+  - 这里的data是读文件读出来的二进制数据
+  - callback（null，JSON.parse(data).student）
+
+#### 接受类型：
+
+- fs.readFile() 接受到的数据data是二进制数据
+
+  - ```javascript
+    fs.readFile('path',function(err,data){})
+    ```
+
+- fs.writeFile() 接受到的数据是字符串形式
+
+  - 把数据保存到文件，得用字符串形式
+
+  - ```javascript
+    let dataStr = JSON.stringify({ students });
+    fs.writeFile(dbPath, dataStr, function(err) {});
+    ```
+
+- 对于文件来说，写入的是字符串形式，读出的是二进制数据
+
+### Promise以及async/await
+
+Promise学习地址：<https://zh.javascript.info/promise-basics>
+
+Async/await学习地址：<https://zh.javascript.info/async-await>
+
+### json-server
+
+官方文档：<https://www.npmjs.com/package/json-server>
+
+JsonServer主要的作用就是搭建本地的数据接口，创建json文件，便于调试调用
+
+- 安装：
+
+```shell
+npm install -g json-server
+```
+
+- 创建json文件
+
+- 启动：
+
+```shell
+json-server --watch db.json
+```
+
+- 结果：
+  - 浏览器输入 <http://localhost:3000/posts/1就可以得到json数据
