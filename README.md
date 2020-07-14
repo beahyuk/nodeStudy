@@ -93,3 +93,9 @@ git reset --hard HEAD
 git reset --hard ORIG_HEAD
 ```
 
+## 算法刷题
+
+[剑指offer-JavaScript版本](https://github.com/piggerCoder/nowcoder-sword-offer)
+
+[算法面试大全](https://github.com/14glwu/FEInterviewBox)
+
