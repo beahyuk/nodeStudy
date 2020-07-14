@@ -1,0 +1,21 @@
+{
+    "students": [{
+            "name": "33",
+            "sex": "女",
+            "hobbies": "23",
+            "id": 1
+        },
+        {
+            "name": "sd",
+            "sex": "女",
+            "hobbies": "sd",
+            "id": 2
+        },
+        {
+            "name": "徐晓晓",
+            "sex": "女",
+            "hobbies": "学习",
+            "id": 3
+        }
+    ]
+}
