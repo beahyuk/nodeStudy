@@ -387,6 +387,8 @@ koa2 koa_demo (创建名称为koa_demo的项目)
 #### 3. 安装依赖包
 
 ```shell
+# 切换目录
+cd koa_demo  
 npm install
 ```
 
