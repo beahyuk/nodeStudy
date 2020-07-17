@@ -1,0 +1,30 @@
+{
+    "users": [{
+            "id": 1,
+            "email": "12@12.com",
+            "name": "test1",
+            "password": "1221"
+        },
+        {
+            "id": 2,
+            "email": "13@13.com",
+            "name": "test2",
+            "password": "1331"
+        },
+        {
+            "id": 3,
+            "email": "14@14.com",
+            "name": "test3",
+            "password": "1441"
+        }
+
+    ],
+    "comments": [{
+        "id": 1,
+        "body": "some comment",
+        "postId": 1
+    }],
+    "profile": {
+        "name": "typicode"
+    }
+}

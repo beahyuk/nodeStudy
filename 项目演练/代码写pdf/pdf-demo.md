@@ -192,6 +192,46 @@ exports.Generate_PDF = class Generate_PDF extends PdfBase {
 };
 ```
 
+map算法改进
+
+```javascript
+ const tableResults = tableData.map((row) => [
+
+       {
+
+         text: row[0],
+
+         alignment: "left",
+
+         style: "tableCell",
+
+       },
+
+       {
+
+         text: row[1],
+
+         alignment: "center",
+
+         style: "tableCell",
+
+       },
+
+       ...row.slice(2).map((cell) => ({
+
+         text: cell,
+
+         alignment: "right",
+
+         style: "tableCell",
+
+       })),
+
+     ]);
+```
+
+
+
 ### pdfBase.js
 
 pdfBase.js  里面是设置引用pdfmake包 ，类似于用example of usage
