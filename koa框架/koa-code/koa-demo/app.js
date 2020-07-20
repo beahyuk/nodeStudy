@@ -24,20 +24,16 @@ const bodyParser = require("koa-bodyparser");
 app.use(bodyParser());
 
 // 最终显示：hello 2 覆盖掉前面的1
-router.get('/', (ctx, next) => {
+router.get('/login', (ctx, next) => {
     console.log("111")
     ctx.body = "1";
-    next();
 });
-router.get('/', ctx => {
-    ctx.body = "hello 2"
-})
 
 
 
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-app.listen(3000, () => {
+app.listen(5000, () => {
     console.log("server is running")
 })

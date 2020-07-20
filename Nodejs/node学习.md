@@ -1915,6 +1915,8 @@ npm install -g json-server
 
 - 启动：
 
+  db.json 是文件名
+
 ```shell
 json-server --watch db.json
 ```
