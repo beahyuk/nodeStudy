@@ -1,2 +1,4 @@
-var devExports = require("./dev.js");
-console.log(devExports);
+const devExports = require("./dev.js");
+const { str, arr } = devExports
+// console.log(devExports.arr);
+console.log(str, arr);

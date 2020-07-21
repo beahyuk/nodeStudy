@@ -4,12 +4,13 @@ module.exports = {
     add: function(x, y) {
         return x + y
     },
-    str: "hello lindG"
-}
-exports.foo = foo;
-exports.add = function(x, y) {
-    return x + y
+    str: "hello lindG",
+    arr: ['1', '2', '333'],
 };
+// exports.foo = foo;
+// exports.add = function(x, y) {
+//     return x + y
+// };
 
 // //数值
 // exports.a = 22;
