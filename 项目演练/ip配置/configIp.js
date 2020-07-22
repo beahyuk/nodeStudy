@@ -125,7 +125,7 @@ const ipList = ["192.168.0.2-192.168.0.5", " 192.168.63.253"];
 const ipListRet = generateIpBySort(ipList, 8, ['192.168.0.3']);
 console.log(`**********生成指定数量的IP**********`);
 console.log(`生成结果如下：${ipListRet}`);
-const testArr = [" 192.168.0.38", "172.0.0.1-172.0.0.255", " 192.168.0.34"];
+const testArr = ["255.25.1.1-255.25.78.255", "172.0.0.1-172.25.78.255", " 192.168.0.34"];
 const testIp = ' 172.0.0.1';
 console.log(`**********校验IP合法性**********`);
 // console.log(`校验结果如下：${examineIpValidate(testArr, " 192.168.0.38")}`);

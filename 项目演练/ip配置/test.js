@@ -41,6 +41,7 @@ function convert(ip) {
 function examineIpValidate(tmpIps, ip) {
     const ipTrim = ip.trim(); // 去除首尾空格
     const ipToDec = convert(ipTrim);
+    console.log(`ip:${ipToDec}\nwhitelist: ${tmpIps}`)
     let rstFlag = false;
     for (let o of tmpIps) {
         const oTrim = o.trim(); // 去除首尾空格
@@ -49,6 +50,7 @@ function examineIpValidate(tmpIps, ip) {
         if (/\-/g.test(oTrim)) {
             const [minStr, maxStr] = oTrim.split('-');
             const [min, max] = [convert(minStr), convert(maxStr)];
+            console.log(`min:${min}\nmax:${max}`)
             if (min <= ipToDec && ipToDec <= max) {
                 rstFlag = true;
                 break;
@@ -64,16 +66,9 @@ function examineIpValidate(tmpIps, ip) {
     return rstFlag;
 }
 
-
-// var pattern = /\d{0,3}\.\d{0,3}\.\d{0,3}\.\d{0,3}/g,
-//     str = 'ip:::ffff:255.25.78.2';
-// console.log(str.match(pattern));
-
-let arrIps = ["255.25.1.1-255.25.78.255", "172.0.0.1-172.25.78.255", " 192.168.0.34"];
-let temp = convert("172.0.0.1".trim());
-console.log(`IP:${temp}`)
-let arrIP = "192.168.0.7-193.168.0.67";
-// let res = /\-/g.test(arrIP)
-const [minS, maxS] = arrIP.split('-');
-const [min, max] = [convert(minS), convert(maxS)];
-console.log(`minIP:${min},maxIP:${max}`)
+// const testArr = ["255.25.1.1-255.25.78.255", "172.0.0.1-172.25.78.255", " 192.168.0.34"];
+const testArr = ['255.25.78.254-255.25.78.255', '255.25.78.253-255.25.78.255', '255.25.78.1-255.25.78.255'];
+const testIp = ' 255.25.78.23';
+console.log(`**********校验IP合法性**********`);
+console.log(`校验结果如下：${examineIpValidate(testArr, testIp)}`);
+// console.log(`转为结果：${convert("255.2.3")}`);
