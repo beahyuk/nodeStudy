@@ -27,6 +27,8 @@
         >
         <el-button @click="toRegister">注册</el-button>
       </div>
+       <el-link type="primary" @click="toPassword"  >忘记密码？
+     </el-link>
     </el-form>
   </div>
 </template>
@@ -61,6 +63,9 @@ export default {
     toRegister() {
       this.$router.replace("/register");
     },
+    toPassword(){
+       this.$router.replace("/password");
+    }
   },
 };
 </script>
@@ -92,20 +97,12 @@ h2 {
   font-weight: bold;
   text-align: center;
 }
-.nav a {
-  font-weight: bold;
-  color: #2c3e50;
-  text-decoration: none;
-}
-.nav a.router-link-exact-active {
-  padding-bottom: 5px;
-  border: solid #3a62d7;
-  border-width: 0 0 2px 0;
-}
+
 
 .button {
   text-align: center;
   display: flex;
   justify-content: space-around;
+  padding-bottom: 10px;
 }
 </style>

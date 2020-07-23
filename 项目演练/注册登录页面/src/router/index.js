@@ -3,6 +3,8 @@ import VueRouter from 'vue-router'
 import Login from '../views/Login.vue'
 import Register from '../views/Register'
 import Home from '../views/Home'
+import Password from '../views/Password.vue'
+import ConfirmPwd from '../views/ConfirmPwd.vue'
 Vue.use(VueRouter)
 
 const routes = [{
@@ -19,6 +21,16 @@ const routes = [{
         path: '/register',
         name: 'Register',
         component: Register
+    },
+    {
+        path: '/password',
+        name: 'Password',
+        component: Password
+    },
+    {
+        path: '/infrom',
+        name: 'ConfirmPwd',
+        component: ConfirmPwd
     }
 ]
 
