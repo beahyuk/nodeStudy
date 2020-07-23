@@ -502,4 +502,29 @@ app.js是koa的核心文件，主要包括4个部分，分别如下
    })
    ```
 
-   
+
+## 9. 其他
+
+### ip接收IPv4地址
+
+#### 修改入口文件
+
+在koa2的入口文件bin/www中，可以找到：
+
+```javascript
+server.listen(port);
+```
+
+hostman 参数被省略，则使用默认值“::”。服务器将会在IPv6可用时接受任何IPv6地址上的连接。如果想要设置为接受IPv4地址，则使用参数'0.0.0.0',即：
+
+```javascript
+server.listen(port,'0.0.0.0');
+```
+
+值得一提，若省略port参数，或使用端口值为0，则会让操作系统分配一个随机端口，这时可以使用server.address().post在'listening'事件发出后检索实际使用的端口：
+
+```javascript
+server.on('listening',function(){
+    // server.address().port
+})
+```
