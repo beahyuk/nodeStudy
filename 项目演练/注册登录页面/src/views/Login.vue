@@ -4,6 +4,8 @@
     <el-form
       :label-position="labelPosition"
       label-width="80px"
+      ref="formData"
+      :rules="rules"
       :model="formData"
       class="login-form"
     >
@@ -11,24 +13,17 @@
         <router-link to="/login">登录</router-link>
         <router-link to="/register">注册</router-link>
       </div>
-      <el-form-item label="用户名：">
-        <el-input v-model="formData.name" placeholder="Username"></el-input>
+      <el-form-item label="用户名：" prop="username">
+        <el-input v-model="formData.username" placeholder="Username"></el-input>
       </el-form-item>
-      <el-form-item label="密码：">
-        <el-input
-          v-model="formData.password"
-          type="password"
-          placeholder="Password"
-        ></el-input>
+      <el-form-item label="密码：" prop="password">
+        <el-input v-model="formData.password" type="password" placeholder="Password"></el-input>
       </el-form-item>
       <div class="button">
-        <el-button type="primary" @click.prevent="handleLogin()"
-          >登录</el-button
-        >
+        <el-button type="primary" @click="handleLogin('formData')">登录</el-button>
         <el-button @click="toRegister">注册</el-button>
       </div>
-       <el-link type="primary" @click="toPassword"  >忘记密码？
-     </el-link>
+      <el-link type="primary" @click="toPassword">忘记密码？</el-link>
     </el-form>
   </div>
 </template>
@@ -36,36 +31,77 @@
 <script>
 export default {
   data() {
+  
+    var validateName = (rule, value, callback) => {
+      if (value === "") {
+        callback(new Error("请输入用户名"));
+      } else {
+        callback();
+      }
+    };
+    var validatePass = (rule, value, callback) => {
+      if (value === "") {
+        callback(new Error("请输入密码"));
+      } else {
+        callback();
+      }
+    };
     return {
       labelPosition: "right",
       formData: {
-        name: "",
+        username: "",
         password: "",
+      },
+      rules: {
+        username: [
+          {
+            validator: validateName,
+            trigger: "blur",
+          },
+        ],
+        password: [
+          {
+            validator: validatePass,
+
+            trigger: "blur",
+          },
+        ],
       },
     };
   },
   methods: {
-    async handleLogin() {
-      const res = await this.axios.get("http://127.0.0.1:3000/users", {
-        params: {
-          email: this.formData.email,
-          name: this.formData.name,
-        },
+    handleLogin(formName) {
+      const username = this.formData.username;
+      const password = this.formData.password;
+      this.$refs[formName].validate((valid) => {
+        if (!valid) {
+          console.log("用户名/密码为空");
+          return false;
+        } else {
+          console.log("axios请求");
+          this.axios
+            .post("http://172.25.73.71:3001/api/login", {
+              username,
+              password,
+            })
+            .then((res) => {
+              console.log(res);
+              if (res.data.status === 200) {
+                this.$router.replace("/");
+                this.$message.success(res.data.msg);
+              } else {
+                this.$message.warning(res.data.msg);
+              }
+            });
+        }
       });
-      console.log(res.data.length);
-      if(res.data.length){
-        this.$message.success("登陆成功");
-        this.$router.push('/')
-      }else{
-        this.$message.warning("登陆失败")
-      }
     },
     toRegister() {
       this.$router.replace("/register");
     },
-    toPassword(){
-       this.$router.replace("/password");
-    }
+    toPassword() {
+      this.$router.replace("/password");
+    },
   },
 };
 </script>
@@ -97,7 +133,6 @@ h2 {
   font-weight: bold;
   text-align: center;
 }
-
 
 .button {
   text-align: center;
