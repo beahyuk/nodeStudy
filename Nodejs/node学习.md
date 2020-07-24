@@ -790,7 +790,8 @@ npm install express --save
 #### 2. hello word
 
 ```js
-var app = require("express");
+var express = require("express");
+const app = express();
 app.get("/",function(req,res){
     res.send("hello world")
 });
