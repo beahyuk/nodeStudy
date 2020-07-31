@@ -733,7 +733,7 @@ user.name = "lily";
 // 删除属性
 delete user.age;
 // 修改属性
-user.name = "linda";
+user.name = "linda";	
 // 查看属性
 let height = user.height
 
@@ -892,4 +892,104 @@ JavaScript 中还有很多其他类型的对象：
 - ……等等。
 
 它们有着各自特别的特性，我们将在后面学习到。有时候大家会说“Array 类型”或“Date 类型”，但其实它们并不是自身所属的类型，而是属于一个对象类型即 “object”。它们以不同的方式对 “object” 做了一些扩展。
+
+### 4.2   对象拷贝，引用
+
+#### 1. 对象和基本类型拷贝区别
+
+对象和基本类型的拷贝是不同的。对象是拷贝的对该对象引用的地址，基本类型是整体赋值。
+
+对象与原始类型其中一个基本的区别是：对象“通过引用的形式”被存储和拷贝。
+
+原始类型值：字符串，数字，布尔值 —— 被“作为整体”赋值/拷贝。
+
+#### 2.克隆与合并， Object.assign 
+
+**浅拷贝只复制指向某个对象的指针，而不复制对象本身，新旧对象还是共享同一块内存。但深拷贝会另外创造一个一模一样的对象，新对象跟原对象不共享内存，修改新对象不会改到原对象**。
+
+**浅拷贝**：复制的是地址：
+
+```javascript
+let user = {
+    name:"lily",
+    age:18
+};
+let buser = user;
+console.log(buser); //{ name: 'lily', age: 18 } 
+```
+
+如果想复制对象本身，而不是引用地址，两种方式
+
+- 方法一：循环原对象，然后每个赋值给 新对象
+
+  ```javascript
+  let user = {
+      name: "lily",
+      age: 18
+  };
+  let clone = {};
+  for (let key in user) {
+      clone[key] = user[key]
+  }
+  console.log(clone); //{ name: 'lily', age: 18 }
+  ```
+
+- 方法二：利用 Object.assign方法，这是js自带的方法 
+
+  语法是：
+
+  ```javascript
+  Object.assign(target, [src1, src2, src3...])
+  ```
+
+  - 参数
+
+    `target` 目标对象 
+
+    `src1，src2..` 源对象   可以有多个源对象
+
+  - 返回值
+
+    目标对象
+
+  ```javascript
+  // 1. 只赋值一个对象
+  let user = {
+      name: "lily",
+      age: 18
+  };
+  let clone = {};
+  Object.assign(clone, user)
+  console.log(clone); //{ name: 'lily', age: 18 }
+  // 2.赋值多个对象
+  let user1 = {
+      name: "lily",
+      age: 18
+  };
+  let user2 = {
+      height: 1.88,
+      hobbies: "sing"
+  };
+  let clone = {};
+  Object.assign(clone, user1, user2)
+  console.log(clone); //{ name: 'lily', age: 18, height: 1.88, hobbies: 'sing' }
+  ```
+
+  注意：如果被拷贝的属性的属性名已经存在，那么它会被覆盖
+
+#### 3. 深层克隆
+
+深层克隆的意思是：对象里的属性值也是对象的时候，也要完全拷贝过去，而不是拷贝引用地址
+
+这是标准的深拷贝，需要调用递归方法或者不自己造轮子，使用现成的实现，例如 JavaScript 库 [lodash](https://lodash.com/) 中的 [_.cloneDeep(obj)](https://lodash.com/docs#cloneDeep)。
+
+#### 4. 总结
+
+对象通过引用被赋值和拷贝。换句话说，一个变量存储的不是“对象的值”，而是一个对值的“引用”（内存地址）。因此，拷贝此类变量或将其作为函数参数传递时，所拷贝的是引用，而不是对象本身。
+
+所有通过被拷贝的引用的操作（如添加、删除属性）都作用在同一个对象上。
+
+为了创建“真正的拷贝”（一个克隆），我们可以使用 `Object.assign` 来做所谓的“浅拷贝”（嵌套对象被通过引用进行拷贝）或者使用“深拷贝”函数，例如 [_.cloneDeep(obj)](https://lodash.com/docs#cloneDeep)。
+
+
 

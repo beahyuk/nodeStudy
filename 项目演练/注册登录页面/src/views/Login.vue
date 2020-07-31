@@ -7,9 +7,11 @@
       ref="formData"
       :rules="rules"
       :model="formData"
+      
       class="login-form"
     >
       <div class="nav">
+        
         <router-link to="/login">登录</router-link>
         <router-link to="/register">注册</router-link>
       </div>
@@ -86,6 +88,7 @@ export default {
             })
             .then((res) => {
               console.log(res);
+              let token = localStorage.getItem("test")
               if (res.data.status === 200) {
                 this.$router.replace("/");
                 this.$message.success(res.data.msg);
