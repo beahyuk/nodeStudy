@@ -9,4 +9,4 @@ var fib = function(N) {
     }
     return arr[N];
 };
-console.log(fib(7))
+console.log(fib(45))
