@@ -1182,3 +1182,220 @@ user.sayHi(); // Ilya
 - 以“方法”的语法调用函数时：`object.method()`,调用过程中的`this`值是`object`
 
 注意：箭头函数没有`this`，在箭头函数内部访问到的`this`都是从外部获取的
+
+### 4.5  构造器和操作符"new"
+
+常规的`{...}` 语法允许创建一个对象，但是我们经常需要创建许多类似的对象，例如多个用户或菜单。这可以使用构造函数和`new` 操作符来实现
+
+常规对象和构造器的区别：当你想有多个对象的时候，你复制多个对象，但是你只复制了指针。而构造器它虽然是一个对象，但是你`new`一个构造器后，会在堆空间划分一块空间给对象。
+
+#### 构造函数
+
+构造函数在技术上是常规函数，不过有两个约定：
+
+1. 它们的命名以大写字母开头。
+2. 它们只能有`new` 操作符来执行。不能直接像普通函数调用
+
+当一个函数被使用`new`操作符执行时，它按照一下步骤：
+
+1. 一个新的空对象被创建并分配给`this`
+2. 函数体执行，通常它会修改`this`，为其添加新的属性
+3. 返回`this`的值
+
+就像下面的`new User(..)`后做的类似事情
+
+```javascript
+function User(name){
+  // 第一步：隐式创建空对象并分配给this
+  // this = {}; 
+  
+  // 第二步：修改this，为其添加新的属性
+  this.name = name;
+  this.isAdmin = false;
+  
+  // 第三步：返回this的值，隐式返回
+  // return this;
+}
+```
+
+创建多个用户时，可以调用`new User("Ann")`,`new User("Alice")`等，比每次都使用字面量创建的要短得多，而且更容易阅读
+
+> 这就是构造器的主要目的——实现可重用的对象创建代码
+
+注意：从技术来说，任何函数都可以作为构造器，即：任何函数都可以通过`new`来运行，它会执行上面的算法。只不过“首字母大写”是一个共同的约定，已明确表示一个函数将被使用`new` 来运行
+
+#### 构造函数的 return
+
+一个普通的函数都有return，但是构造函数最好不明写return，因为它们的任务是将所有必要的东西写入`this`，并自动转换成结果，隐式返回`return this`
+
+但如果有的话，根据下面的规则返回
+
+- 如果`return` 返回的是一个对象，则返回到这个对象，而不是`this`;
+- 如果`return` 返回的是一个原始类型，例如string字符串，number数字，Boolean布尔类型等等，则忽略
+
+换句话说，带有对象的`return`返回该对象，在所有其他情况下返回`this`
+
+通常构造器没有`return`语句，return返回一个对象是特殊行为
+
+**省略括号**
+
+如果`new`一个函数没有参数，则可以省略`new`后的括号
+
+```javascript
+let user = new User； //没有参数
+// 等同于
+let user = new User();
+```
+
+但是省略括号不是好风格，最好不要省略，虽然规范允许使用这个语法。普通函数一定 要括号来调用，即使没有参数`getTotal()`
+
+#### 总结
+
+- 构造函数，或简称构造器，就是常规函数，但大家对于构造器有个共同的约定，就是其命名首字母要大写
+- 构造函数只能使用`new`来调用，这样的调用意味着在开始时创建了空的`this`,并在最后返回填充了值的`this`
+
+我们可以使用构造函数来创建多个类似的对象
+
+JavaScript为许多内置的对象提供了构造函数，比如日期`Date`,集合`set` 等待
+
+### 4.6  可选链  "?."
+
+#### 介绍可选链
+
+可选链就是判断前面是否存在，就算不存在，也不会报错。是用于嵌套对象
+
+类似于之前的`user && user.address && user.address.street`,只有`user`和`user.address`都为true后，才执行`user.address.street`的命令，现在是`user?.address?.street`
+
+可选链`?.`是一种访问嵌套对象属性的放错误方法。即使中间的属性不存在，也不会出现错误
+
+如果可选链`?.`前面的部分是`undefined`或者`null`,它就会停止运算并返回`undefined`
+
+`?.` 语法使其**前面的值**成为**可选值**，但不会对后面的起作用
+
+例如`user?.` 只允许`user` 为`null/undefined`,只判断前面的
+
+#### 注意点
+
+**不要过度使用可选链**
+
+我们应该只将`?.`使用在一些东西可以不存在的地方，如果`user`必须存在，就不要用`?.`
+
+ **`?.`前的变量必须已声明**
+
+如果未声明变量`user`，那么`user?.anything`会触发一个错误：
+
+```javascript
+// ReferenceError:user is not defined
+user?.address;
+```
+
+`?.`前的变量必须已通过`let/const/var user`进行声明。可选链只适用于已声明的变量
+
+#### 其他情况：?.(),?.[]
+
+可选链`?.` 不是一个运算符，而是一个特殊的语法结构，它还可以和函数和方括号一起使用。
+
+例如,将`?.()` 用于调用一个可能不存在的函数
+
+```javascript
+let user1 = {
+  admin(){
+    console.log("hello word");
+  }
+}
+let user2 ={};
+user1.admin?.(); //hello word
+user2.adnmin?.();
+```
+
+在这个两行代码中，我们首先使用点符号`.` 来获取`admin` 属性，因为用户对象一定存在，因此可以安全地读取它。
+
+然后`?.()` 会检查它左边的部分；如果admin函数存在，就调用它，不存在，就运算停止，没有错误如user2
+
+如果想使用方括号`[]` 而不是点符号`.` 来访问属性，语法`?.[]` 也可以使用。允许从一个可能不存在的对象上安全地读取属性
+
+```javascript
+let user1 = {
+  firstName: "John"
+};
+
+let user2 = null; // 假设，我们不能授权此用户
+
+let key = "firstName";
+
+alert( user1?.[key] ); // John
+alert( user2?.[key] ); // undefined
+
+alert( user1?.[key]?.something?.not?.existing); // undefined
+```
+
+此外，还可以将`?.` 跟`delete` 一起使用
+
+```javascript
+delete user?.name; //如果user存在，则删除user.name
+```
+
+**可以使用`?.` 来安全读取或删除，但不能写入**
+
+可选链`?.` 不能用在赋值语句的左侧
+
+```javascript
+// 下面这段代码的想法是 要写入 user.name,如果user存在的话
+user?.name = "john" ; //error,不起作用
+```
+
+#### 总结
+
+可选链`?.` 语法有三种形式
+
+1. `obj?.prop` —— 如果`obj` 存在则返回 `obj.prop`,否则返回`undefined`
+2. `obj?.[prop]`——如果`obj`存在则返回`obj[prop]`，否则返回`undefined`
+3. `obj?.method()` ——如果`obj` 存在则调用`obj.method()`，否则返回`undefined`
+
+`?.` 检查左边部分是否为`null/undefined` ,如果不是则继续运算
+
+`?.` 链使我们能够安全地访问嵌套属性
+
+### 4.7 Symbol 类型（ 不懂）
+
+#### 总结
+
+`Symbol`是唯一标识符的基本类型
+
+Symbol是使用带有可选描述（name）的`Symbol()`调用创建的
+
+Symbol总是不同的值，即使它们有相同的名字。如果我们希望同名的Symbol相等，那么我们应该使用全局注册表示：`Symbol.for(key)` 返回（如果需要的话则创建） 一个以`key`作为名字的全局Symbol。使用`Symbol.for` 多次调用`key` 相同的Symbol时，返回的就是同一个Symbol
+
+Symbol有两个主要的使用场景：
+
+1. "隐藏"对象属性。如果我们想要向"属于"另一个脚本或者库的对象添加一个属性，我们可以创建一个Symbol并使用它作为属性的值。Symbol属性不会出现在`for..in`中，因此它不会意外地被与其他属性一起处理。并且，它不会被直接访问，因为另一个脚本没有我们的symbol。因此，该属性将受到保护，防止被意外使用或重写
+2. JavaScript使用了许多系统Symbol，这些Symbol可以作为`Symbol.*`访问。我们可以使用它们来改变一些内置行为
+
+### 4.8  对象 —— 原始值转换 （不懂）
+
+无语，为什么要把高贵的对象转换成原始值。 
+
+`JSON.parse(JSON.stringify(onj))` 实现深拷贝。利用JSON.stringify将js对象序列化（JSON字符串），再使用JSON.parse来反序列化（还原）js对象。
+
+#### 总结
+
+对象到原始值的转化，是由许多期望以原始值作为值的内建函数和运算符自动调用的
+
+这里有三种类型（hint）：
+
+- `string` 对于`alert`和其他字符串的操作
+- `number` 对于数学运算
+- `default` 少数运算符
+
+规范明确描述了哪个运算符使用哪个hint。很少有运算符"不知道期望什么"并使用`default` hint。通常对于内建对象，`default` hint的处理方式与`number`相同，因此在实践中，最后两个hint常常合并在一起
+
+转换算法是：
+
+1. 调用`obj[Symbol.toPrimitive](hint)`如果这个方法存在
+2. 否则，如果hint是`string`
+   1. 尝试`obj.toString()`和`obj.valueOf()`，无论哪个存在
+3. 否则，如果hint是`number`或者`default`
+   1. 尝试`obj.valueOf()`和`obj.toString()`，无论哪个存在
+
+在实践中，为了便于进行日志转换或调试，对于所有能够返回一种"可读性好"的对象的表达形式的转换，只实现以`obj.toString()`作为全能转换的方法就够了
+
