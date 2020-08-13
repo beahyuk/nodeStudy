@@ -562,7 +562,7 @@ module.exports = {
 }
 ```
 
-#### 2.3 原理解析
+#### 2.3 原理解析exports和module.exports
 
 ```javascript
 console.log(exports === module.exports) // =>true
@@ -582,7 +582,7 @@ module.exports.foo = "abc"
    exports直接赋值相当于 重新定义了
 
    - 一开始是 var exports = module.exports
-   - 直接复制 exports = "abc"
+   - 直接赋值 exports = "abc"
    - 这样exports指向的就不是module.exports了，而是指向’abc‘的地址，所以exports不可以直接赋值
 
    ```javascript
@@ -1181,7 +1181,7 @@ exit
 - `use 数据库名称`
   - 切换到指定的数据（如果没有会新建）
 - 插入数据
-- `show collections`或 `show tables`命令
+- `show collections`或 `show tables`命令1
   - 查看已有集合
 - `db.user.find() `user是集合名
   - 查看已插入文档
@@ -1923,4 +1923,4 @@ json-server --watch db.json
 ```
 
 - 结果：
-  - 浏览器输入 <http://localhost:3000/posts/1就可以得到json数据
+  - 浏览器输入 <http://localhost:3000/posts/1就可以得到json数据   
