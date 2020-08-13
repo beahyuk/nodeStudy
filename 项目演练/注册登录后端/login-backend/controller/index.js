@@ -102,14 +102,14 @@ function sendTargetMail(targetMail) {
         port: 465,
         secure: true,
         auth: {
-            user: 'xueqing-950822@163.com',
-            pass: 'x15851783230q'
+            user: 'username@163.com',
+            pass: '*****'
         }
     });
 
     // 设置电子邮件
     let mailOptions = {
-        from: '"coderXue"<xueqing-950822@163.com>', //邮件来源
+        from: '"发布者姓名"<username@163.com>', //邮件来源
         to: targetMail, // 邮件发送到哪里,多个邮箱使用逗号隔开
         subject: '重置密码',
         text: '你的新密码是666666'
