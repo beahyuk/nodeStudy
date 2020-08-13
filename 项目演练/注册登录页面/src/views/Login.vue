@@ -82,7 +82,7 @@ export default {
         } else {
           console.log("axios请求");
           this.axios
-            .post("http://172.25.73.71:3001/api/login", {
+            .post("http://127.0.0.1:3001/api/login", {
               username,
               password,
             })

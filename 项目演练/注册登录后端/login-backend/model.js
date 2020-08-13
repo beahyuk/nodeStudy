@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const bcrypt = require("bcryptjs")
+mongoose.set('useCreateIndex', true)
 
 // 连接数据库
 mongoose.connect('mongodb://localhost:27017/test', {

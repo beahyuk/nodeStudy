@@ -116,7 +116,7 @@ export default {
         } else {
           console.log("axios请求");
           this.axios
-            .post("http://172.25.73.71:3001/api/register", {
+            .post("http://127.0.0.1:3001/api/register", {
               email,
               username,
               password,
@@ -124,7 +124,7 @@ export default {
             .then((res) => {
               console.log(res);
               if(res.data.status === 200){
-                                this.$router.replace("/");
+                this.$router.replace("/");
                 this.$message.success(res.data.msg);
 
               }else{

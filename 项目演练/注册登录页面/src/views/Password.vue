@@ -28,7 +28,8 @@ export default {
       labelPosition: "right",
       formData: {
         info: ""
-      }
+      },
+      toEmail:"",
     };
   },
   methods: {
@@ -38,8 +39,19 @@ export default {
     toRegister() {
       this.$router.replace("/register");
     },
-    toNext(){
-      this.$router.push("/infrom")
+    async toNext(){
+      await this.sumbitEmail().then(email =>{
+        this.toEmail = email;
+      })
+      console.log(this.toEmail);
+    },
+
+    async sumbitEmail(){
+      const info = this.formData.info;
+      let res = await  this.axios.post("http://127.0.0.1:3001/api/getEmail",{
+        info
+      }) 
+      return res.data.email
     }
   }
 };
