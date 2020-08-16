@@ -30,7 +30,7 @@ var maxSubStr = function(nums) {
     // 因为sum和maxSum都是取第一个数，所以循环从1开始
     for (let i = 1; i < nums.length; i++) {
         let cur = nums[i]
-        if (sum + cur >= cur) {
+        if (sum + cur > cur) {
             sum = sum + cur
             end++
         } else {
