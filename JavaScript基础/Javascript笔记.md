@@ -1617,3 +1617,163 @@ alert(parseInt('ff',16)); // 255  没有0x 仍然有效
 - 使用`Math.floor` , `Math.ceil`, `Math.trunc` , `Math.round` 或 `num.toFixed(precision)`进行舍入
 - 请确保记住 使用小数 时 会损失精度
 
+### 5.3 字符串（string）
+
+####  字符串长度
+
+`length`属性表示字符串长度
+
+`length` 是一个属性。`str.length` 是一个数字属性，而不是函数。后面不需要添加括号
+
+#### 访问字符
+
+要获取在`pos`位置的一个字符，可以使用方括号`[pos]`或者调用` str.charAt(pos)` 方法.第一个字符从**零位置**开始.
+
+```javascript
+let str = "hello";
+
+// 第一个字符
+alert( str[0] ); // h
+alert( str.charAt(0) ); // h
+
+// 最后一个字符
+alert( str[str.length-1] ); //o
+```
+
+方括号取数有点像数组, 根据下标取值
+
+`[pos]`和`str.charAt(pos)`的区别: 如果没有找到字符,`[]`返回`undefined` 而 `charAt` 返回一个空字符串
+
+**遍历字符串**
+
+使用`for..of`遍历字符串
+
+```javascript
+for(let char of "hello"){
+  alert(char); // h,e,l,l,o 
+}
+```
+
+#### 字符串是不可改变的
+
+字符串不能被修改,如果想要修改字符串,就新建一个字符串
+
+```javascript
+let str = "hi";
+
+str = 'H' + str[1]; //替换字符串
+
+alert( str ); //hi
+```
+
+#### 改变大小写
+
+`toLowerCase()`  所有字符串变小写
+
+`toUpperCase()`  所有字符串变大写
+
+```JavaScript
+alert( "hello".toUpperCase() ); // HELLO
+alert( "HELLO".toLowerCase() ); // hello
+```
+
+要想是某个字符变小写/大写
+
+```javascript
+alert( 'Hello'[0].toLowerCase() );// h
+```
+
+#### 查找字符串
+
+在字符串中查找子字符串
+
+1. **str.indexOf**
+
+   方法: `str.indexOf(substr,pos)`
+
+   它从给定位置`pos`开始,在`str`中查找`substr`.如果没有找到,则返回`-1`,否则返回匹配成功的位置
+
+   ```javascript
+   let str = "hello word";
+   
+   alert( str.indexOf('o',2)) //4 表示从第2个位置开始找
+   ```
+
+   如果想找到一个字符出现在字符串中的所有位置,可以用循环
+
+   ```javascript
+   let str = "google google";
+   let target = "g";
+   
+   let pos = -1;
+   let arr = [];
+   while((pos = str.indexOf(target,pos+1)) != -1){
+     arr.push(pos);
+   }
+   console.log(pos);// [ 0, 3, 7, 10 ]
+   ```
+
+2. **str.lastIndexOf**
+
+   `str.lastIndexOf(substr,pos)`
+
+   和indexOf()类似,只不过它是从字符串的末尾开始搜索到开头
+
+3. **按位(bitwise) NOT技巧**
+
+   不会,过
+
+4. **includes, startsWith, endsWith**
+
+   `str.includes(substr,pos)` 查看某字符是否在字符串中,返回true/false. 可以用作比较**两个字符串重复**
+
+   ```javascript
+let str1 = "hello google";
+   let str2 = "hello word";
+   let arr = []
+   for (let char of str2) {
+       let resBoolean = str1.includes(char); // 查看str2中的字符是否在str1中
+       if (resBoolean) {
+           arr.push(char) // 在str1 中,放到数组中
+       }
+   }
+   console.log(arr.length,arr); // 7 [ 'h', 'e', 'l', 'l', 'o', ' ', 'o' ] 两个字符串一共有7个重复字符
+   ```
+   
+   `str.startsWith(substr)`  查看字符串是否 以substr 开头 ,返回true/false
+   
+   `str.endsWith(substr)`  查看字符串是否 以substr 结尾,返回 true/false
+
+#### 获取子字符串
+
+JavaScript中有三种获取字符串的方法: `substring`, `substr`,`slice`
+
+- ` str.slice(start,end)` 返回字符串从 `start` 到(但不包括)`end`的部分.如果没有`end`,会默认到末尾
+
+  `start/end`可以是负数,它们的意思是 **起始位置**从 **字符串结尾计算**
+
+- `str.substring(start,end)` 返回字符串在`start `和 `end`**之间**的部分,和slice一样
+- `str.substr(start,length)` 返回字符串从`start` 开始的给定`length` 的部分
+
+| 方法                    | 选择方式……                                            | 负值参数            |
+| :---------------------- | :---------------------------------------------------- | :------------------ |
+| `slice(start, end)`     | 从 `start` 到 `end`（不含 `end`）                     | 允许                |
+| `substring(start, end)` | `start` 与 `end` 之间（包括 `start`，但不包括 `end`） | 负值代表 `0`        |
+| `substr(start, length)` | 从 `start` 开始获取长为 `length` 的字符串             | 允许 `start` 为负数 |
+
+#### 总结
+
+- 有 3 种类型的引号. 反引号允许字符串跨越多行并可以使用`${..}`在字符串嵌入表达式
+- JavaScript中的字符串使用的是 UTF-16 编码
+- 我们可以使用像 `\n` 这样的特殊字符或通过使用 `\u..`来操作它们的 Unicode进行字符插入
+- 获取字符时,使用`[]`
+- 获取子字符串, 使用 `slice`或`substring`
+- 字符串的大/小写转换,使用:`toLowerCase/toUpperCase`
+- 查找子字符串时,使用 `indexOf` 或 `includes/startsWith/endsWith`进行简单检查
+- 根据语言比较字符串时使用`localeCompare` .否则将按字符代码进行比较
+
+还有几种有用的字符串方法
+
+- `str.trim()`   删除字符串前后的空格
+- `str.repeat(n)`  重复字符串`n` 次
+
