@@ -93,6 +93,60 @@ git reset --hard HEAD
 git reset --hard ORIG_HEAD
 ```
 
+### 3. gitlab迁移远程仓库
+
+参考地址:<https://www.cnblogs.com/kdx-2/p/8916295.html>
+
+1) 到工程目录下 (例如: cd xx-app/),可以在目录下打开git bash
+
+2) 查看当前远程仓库地址
+
+```
+git remote -v
+```
+
+(例如得到: git@11.11.11.22:app/xx-app.git)
+
+3) 移除当前地址
+
+````
+git remote remove origin
+````
+
+4) 添加新地址
+
+```
+git remote add origin<新的远程仓库地址>
+```
+
+(例如得到: git remote add origin git@22.22.22.11:app/xx-app.git) 就是主页的地址,不要进入tree,从浏览器复制地址,后面自己加git
+
+再次查看 当前地址 git remote -v,确认是修改后的ip服务器地址.
+
+5) 将本地分支上的代码push到远程相对应的分支
+
+```
+git push --set-upstream origin master
+```
+
+或者 执行到4)后 ,直接 git push .它会提醒你 要上传到相对应的分支, 直接复制 提醒的代码就可以了
+
+6) 设置当前分支(本地分支对应的远程仓库分支)
+
+```
+git branch --set-upstream-to=origin/<branch><本地分支>
+```
+
+例如: git branch --set-upstream-to = origin/Dev_20180808 Dev_20180808
+
+## svn操作
+
+### 下载项目到本地
+
+右键 svn checkout
+
+参照：<https://www.cnblogs.com/yangzailu/p/6698142.html>
+
 ## 算法刷题
 
 [剑指offer-JavaScript版本](https://github.com/piggerCoder/nowcoder-sword-offer)
