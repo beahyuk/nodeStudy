@@ -1777,3 +1777,193 @@ JavaScript中有三种获取字符串的方法: `substring`, `substr`,`slice`
 - `str.trim()`   删除字符串前后的空格
 - `str.repeat(n)`  重复字符串`n` 次
 
+### 5.4 数组
+
+#### 声明
+
+创建一个空数组有两种语法:
+
+```javascript
+let arr = new Array();
+let arr = [];
+```
+
+第二种方式更常用,可以在[]里添加初始元素:
+
+```javascript
+let fruits = ["Apple","orange","bannana"];
+```
+
+数组元素从**0**开始编号
+
+**数组的增删改查**
+
+1. 获取元素
+
+   我们可以通过方括号中的数字获取元素:
+
+   ```javascript
+   alert(fruits[2]); // bannana
+   ```
+
+2. 修改元素
+
+   ```javascript
+   fruits[2] = "pear"; //现在变成["Apple","orange","pear"]
+   ```
+
+3. 增加元素
+
+   ```javascript
+   fruits[3] = "beach"; //现在变成["Apple","orange","pear","beach"]
+   ```
+
+4. 删除元素
+
+   ```javascript
+   splice方法/slice方法
+   ```
+
+**​以逗号结尾​**
+
+数组就像对象一样,可以以 **逗号**结尾:
+
+```javascript
+let fruits = [
+  "apple",
+  "orange",
+]
+```
+
+因为每一行都是相似的,所以这种以"逗号结尾"的方式使得 插入/移除项变得更加简单.
+
+#### pop/push,shift/unshift方法
+
+- pop/push 是栈的 **后进先出** 特性 在末端操作
+
+- shift/unshift 是队列  **先进先出** 特性 在首端操作
+- JavaScript中的数组 既可以用作队列,也可以用作栈,它们允许你 从首端/末端 来添加/删除元素
+- 这在计算机科学中,允许这样的操作 的数据结构被称为 **双端队列(deque)**
+
+push/unshift 可以一次添加多个元素
+
+```javascript
+fruits.push("1","2");
+fruits.unshift("1","2");
+```
+
+#### 性能
+
+`pop/push`方法运行比较快 ,`shift/unshift`方法运行比较慢
+
+因为shift/unshift 从首端删除/增加数据后,后面的数据也要往前移/往后移,所以会慢
+
+#### 循环
+
+数组的循环有三种:
+
+- `for()`,常用的
+
+- `for...of` 遍历数组,获得是元素值
+
+  ```javascript
+  let arr = ["aa","bb","cc"];
+  
+  //遍历数组元素
+  for(let num of arr){
+    alert(num); 
+  }
+  ```
+
+- `for..in` 遍历数组,获得是下标值
+
+  但是不推荐使用,因为for..in 是**对象**的方法,只不过数组是特殊的对象,也可以用
+
+  for..in 循环会遍历所有属性,不仅是数字属性,也会遍历 非数字的属性和方法.这些是我们不需要的.for..in会把它们遍历出来,会导致问题
+
+  for..in 只适合普通对象, 用于数组,速度也会慢到10-100倍
+
+#### length
+
+当我们修改数组的时候,`length`属性会自动更新.准确地来说,它实际上不是数组元素的个数 ,而是 **最大的数字索引值加一**
+
+```javascript
+let arr = [];
+arr[233] = "11"; 
+alert(arr.length);//234; 直接创建了234个空间的数组
+```
+
+`length`属性是 **可写** 的
+
+如果我们减少length,数组就会被阶段
+
+```javascript
+let arr = [1,2,3,4,5];
+
+arr.length = 2; // 截断到只剩 2 个 元素
+alert(arr); // [1,2]
+```
+
+清空数组的最简单方法:`arr.length = 0 `
+
+#### toString
+
+数组也有自己的`toString` 方法的实现,会返回以 逗号 隔开的 元素列表
+
+`String(arr)` 或者直接加 数字
+
+例如
+
+```javascript
+let arr =  [1,2,3];
+alert(String(arr) === '1,2,3'); // true
+```
+
+直接加数字:
+
+```javascript
+alert( [] + 1); //"1"
+alert( [1] + 1); // "11"
+alert( [1,2] + 1);// "1,21"
+```
+
+数组没有`Symbol.toPrimitive`,也没有`valueOf` .它们只能执行 `toString` 进行转换,所以 `[]` 就变成了 一个空字符串,`[1]` 变成了 `"1"`, `[1,2]` 变成了`"1,2"`
+
+当`"+"` 运算符把一些项加到字符串后面时,加号后面的项也会被转为字符串. 这也是最简单的转换字符串方法
+
+```javascript
+let a = 1;
+let b = a + ""; //"1"
+```
+
+#### 总结
+
+数组是一种特殊的对象,适用于存储和管理有序的数据项
+
+- 声明
+
+  ```js
+  // 方括号(常见用法)
+  let arr = [item1,item2..];
+  //new Array(极其少见)
+  let arr = new Array(item1,item2..);
+  ```
+
+  调用`new Array(number)`会创建一个给定长度的数组,但不含有任何项
+
+- `length`属性是数组的长度,准确地说,它是数组的最后一个数字索引值加一,它是由数组方法 自动调整
+
+- 如果我们手动缩短`length` 那么数组就会被截断
+
+我们可以通过下列操作以 双端队列 的方法 来使用数组
+
+- `push(...items)` 在末端添加 `items` 项。
+- `pop()` 从末端移除并返回该元素。
+- `shift()` 从首端移除并返回该元素。
+- `unshift(...items)` 从首端添加 `items` 项。
+
+遍历数组的元素:
+
+- `for (let i=0; i<arr.length; i++)` — 运行得最快，可兼容旧版本浏览器。
+- `for (let item of arr)` — 现代语法，只能访问 items。
+- `for (let i in arr)` — 永远不要用这个。

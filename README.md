@@ -139,6 +139,21 @@ git branch --set-upstream-to=origin/<branch><本地分支>
 
 例如: git branch --set-upstream-to = origin/Dev_20180808 Dev_20180808
 
+### 4. git pull 或合并分支遇到问题
+
+**Please enter a commit message to explain why this merge is necessary.**
+
+请输入提交消息来解释为什么这种合并是必要的
+
+![1597883097601](README.assets/1597883097601.png)
+
+**解决方案**
+
+1. 按键盘字母 i 进入insert模式
+2. 修改最上面那行黄色合并信息,可以不修改
+3. 按键盘左上角"Esc"
+4. 输入":wq",注意是冒号+wq,按回车键即可
+
 ## svn操作
 
 ### 下载项目到本地
