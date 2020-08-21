@@ -20,12 +20,12 @@ const userSchema = new Schema({
     },
     password: {
         type: String,
-        set(val) {
-            const salt = bcrypt.genSaltSync(10);
-            const psw = bcrypt.hashSync(val, salt);
-            // this.setDataValue('password', psw)
-            return psw
-        }
+        // set(val) {
+        //     const salt = bcrypt.genSaltSync(10);
+        //     const psw = bcrypt.hashSync(val, salt);
+        //     // this.setDataValue('password', psw)
+        //     return psw
+        // }
     }
 })
 const User = mongoose.model("User", userSchema)

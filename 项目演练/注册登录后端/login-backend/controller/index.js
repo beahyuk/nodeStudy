@@ -11,28 +11,46 @@ exports.login = async(req, res) => {
     })
     if (!user) {
         res.send({
-            status: 422,
+            status: -1,
             msg: "用户名不存在"
         })
-    };
+    }else{
+        if(req.body.password !== user.password ){
+            res.send({
+                status: -2,
+                msg: "密码错误"
+            });
+        }else{
+             res.send({
+                status: 200,
+                msg: "登录成功",
+                data:{
+                    token:"i'm token", // test
+                    username:user.username
+                }
+            });
+    }
+    }
+    console.log(req.body.password,user.password );
     // 2.查看密码是否正确
-    const isPasswordValid = bcrypt.compareSync(req.body.password, user.password);
-    if (!isPasswordValid) {
-        res.send({
-            status: 422,
-            msg: "密码错误"
-        });
-    };
-    // 3.登录成功后，生成token值
-    const token = jwt.sign({
-        id: String(user._id),
-    }, SECRET)
-    res.send({
-        user,
-        token,
-        status: 200,
-        msg: "登录成功"
-    });
+    
+    // const isPasswordValid = bcrypt.compareSync(req.body.password, user.password);
+    // if (!isPasswordValid) {
+    //     res.send({
+    //         status: 422,
+    //         msg: "密码错误"
+    //     });
+    // };
+    // // 3.登录成功后，生成token值
+    // const token = jwt.sign({
+    //     id: String(user._id),
+    // }, SECRET)
+    // res.send({
+    //     user,
+    //     token,
+    //     status: 200,
+    //     msg: "登录成功"
+    // });
 };
 exports.register = async(req, res) => {
     const username = await User.findOne({
@@ -44,12 +62,12 @@ exports.register = async(req, res) => {
     // 1.用户名已存在/邮箱已存在
     if (username) {
         res.send({
-            status: 422,
+            status: -1,
             msg: "该用户名已注册"
         })
     } else if (email) {
         res.send({
-            status: 422,
+            status: -2,
             msg: "该邮箱已注册"
         })
     } else {
@@ -68,7 +86,7 @@ exports.register = async(req, res) => {
 
 exports.sendEmail = async(req, res) => {
     // 1.查看用户名/邮箱是否存在
-    const keyword = req.body.info;
+    const keyword = req.body.account;
     const reg = new RegExp(keyword, 'i');
     const user = await User.findOne({
         $or: [
@@ -77,22 +95,32 @@ exports.sendEmail = async(req, res) => {
         ]
     });
     if (!user) {
+
         res.send({
-            status: 422,
-            msg: "用户不存在"
+            status: -1,
+            msg: "用户不存在",
+         
+        })
+    }else{
+        console.log(user.email);
+        res.send({
+            status:200,
+            data:{
+                email:user.email
+            }
         })
     }
-    sendTargetMail(user.email)
-    User.findOneAndUpdate({ email: user.email }, { password: "666666" }, (err, ret) => {
-        if (err) {
-            console.log('update fail', err);
-        }
-        console.log('update success', ret);
-    })
-    res.send({
-        email: user.email
-    })
-    console.log(user.email);
+    // sendTargetMail(user.email)
+    // User.findOneAndUpdate({ email: user.email }, { password: "666666" }, (err, ret) => {
+    //     if (err) {
+    //         console.log('update fail', err);
+    //     }
+    //     console.log('update success', ret);
+    // })
+    // res.send({
+    //     email: user.email
+    // })
+    // console.log(user.email);
 };
 
 function sendTargetMail(targetMail) {

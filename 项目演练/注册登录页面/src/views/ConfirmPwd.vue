@@ -13,7 +13,7 @@
       </div>
   
       <div class="btn" style="text-align:center ">
-        <el-button  type="primary" @click="toLogin">查看</el-button>
+        <el-button  type="primary" @click="toEmail(email)">查看</el-button>
       </div>
  
     </el-form>
@@ -31,11 +31,7 @@ export default {
     };
   },
   methods: {
-     toLogin() {
-          // this.$router.replace("/login");
-
-    },
-     goToEmailLogin (email) {
+     toEmail (email) {
         var hash = {
             'qq.com': 'http://mail.qq.com',
             'gmail.com': 'http://mail.google.com',
