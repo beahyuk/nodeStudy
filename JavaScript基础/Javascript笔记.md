@@ -2247,21 +2247,23 @@ console.log(sum);
 
   当我们需要**遍历并返回每个元素的数据**时 —— 我们可以使用 `map`。
 
-  语法是：
+  [arr.reduce](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce) 方法和 [arr.reduceRight](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight) 方法和上面的种类差不多，但稍微复杂一点。它们用于根据数组计算单个值。
 
+  语法是：
+  
   ```javascript
   let value = arr.reduce(function(accumulator, item, index, array) {
     // ...
-  }, [initial]);
+}, [initial]);
   ```
 
   该函数一个接一个地应用于所有数组元素，并将其结果“搬运（carry on）”到下一个调用。
 
   参数：
-
+  
   - `accumulator` —— 是上一个函数调用的结果，第一次等于 `initial`（如果提供了 `initial` 的话）。
   - `item` —— 当前的数组元素。
-  - `index` —— 当前索引。
+- `index` —— 当前索引。
   - `arr` —— 数组本身。
 
   应用函数时，上一个函数调用的结果将作为第一个参数传递给下一个函数。
@@ -2269,15 +2271,17 @@ console.log(sum);
   因此，第一个参数本质上是累加器，用于存储所有先前执行的组合结果。最后，它成为 `reduce` 的结果。
 
   在这里，我们通过一行代码得到一个数组的总和：
-
+  
   ```javascript
   let arr = [1, 2, 3, 4, 5];
   
   let result = arr.reduce((sum, current) => sum + current, 0);
   
-  alert(result); // 15
   ```
 
+alert(result); // 15
+  ```
+  
   reduceRight和reduce方法的功能一样，只是**遍历为从右到左**。
 
 #### Array.isArray
@@ -2286,11 +2290,11 @@ console.log(sum);
 
 所以 `typeof` 不能帮助从数组中区分出普通对象.但是数组经常被使用，因此有一种特殊的方法用于判断：`Array.isArray(value)`。如果 `value` 是一个数组，则返回 `true`；否则返回 `false`。
 
-```javascript
+​```javascript
 alert(Array.isArray({})); // false
 
 alert(Array.isArray([])); // true
-```
+  ```
 
 #### 总结
 
@@ -2331,3 +2335,994 @@ alert(Array.isArray([])); // true
 - `arr.fill(value, start, end)`—— 从索引 `start` 到 `end`，用重复的 `value` 填充数组。
 
 - `arr.copyWithin(target, start, end)`—— 将从位置 `start` 到 `end` 的所有元素复制到 **自身** 的 `target` 位置（覆盖现有元素）。
+
+### 5.6 Iterable object（可迭代对象）(不太懂)
+
+**可迭代（Iterable）** 对象是数组的泛化。这个概念是说任何对象都可以被定制为可在 `for..of` 循环中使用的对象。
+
+数组是可迭代的。但不仅仅是数组。很多其他内建对象也都是可迭代的。例如字符串也是可迭代的
+
+#### 可迭代（iterable）和类数组（array-like）
+
+- **Iterable** 如上所述，是实现了 `Symbol.iterator` 方法的对象。
+  - 人话就是:能用for .. of 的 都是迭代的
+- **Array-like** 是有索引和 `length` 属性的对象，所以它们看起来很像数组。
+
+例如，字符串即是可迭代的（`for..of` 对它们有效），又是类数组的（它们有数值索引和 `length` 属性）。
+
+下面这个对象则是类数组的
+
+```javascript
+let arrayLike = { // 有索引和 length 属性 => 类数组对象
+  0: "Hello",
+  1: "World",
+  length: 2
+};
+```
+
+可迭代对象和类数组对象通常都 **不是数组**，它们没有 `push` 和 `pop` 等方法。
+
+#### Array.from
+
+可以让 类数组 /可迭代  转换为 数组 
+
+有一个全局方法 [Array.from](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Array/from) 可以接受一个可迭代或类数组的值，并从中获取一个“真正的”数组。然后我们就可以对其调用数组方法了。
+
+`Array.from` 的完整语法允许我们提供一个可选的“映射（mapping）”函数：
+
+```javascript
+Array.from(obj[, mapFn, thisArg])
+```
+
+可选的第二个参数 `mapFn` 可以是一个函数，该函数会在对象中的元素被添加到数组前，被应用于每个元素，此外 `thisArg` 允许我们为该函数设置 `this`。
+
+现在我们用 `Array.from` 将一个字符串转换为单个字符的数组：
+
+```javascript
+let str = '𝒳😂';
+
+// 将 str 拆分为字符数组
+let chars = Array.from(str);
+
+alert(chars[0]); // 𝒳
+alert(chars[1]); // 😂
+alert(chars.length); // 2
+```
+
+与 `str.split` 方法不同，它依赖于字符串的可迭代特性。
+
+#### 总结
+
+有索引属性和 `length` 属性的对象被称为 **类数组对象**。这种对象可能还具有其他属性和方法，但是没有数组的内建方法。
+
+`Array.from(obj[, mapFn, thisArg])` 将可迭代对象或类数组对象 `obj` 转化为真正的数组 `Array`，然后我们就可以对它应用数组的方法。可选参数 `mapFn` 和 `thisArg` 允许我们将函数应用到每个元素。
+
+### 5.7 Map and Set（映射和集合）
+
+我们已经了解了以下复杂的数据结构：
+
+- 存储带键的数据（keyed）集合的对象。
+- 存储有序集合的数组。
+
+但这还不足以应对现实情况。这就是为什么存在 `Map` 和 `Set`。
+
+#### Map
+
+Map是一个带键的数据项的集合，就像一个 `Object` 一样。 但是它们最大的差别是 `Map` 允许任何类型的键key
+
+对象的key 是字符串,而map的key 可以是字符串 也可以是 数字等
+
+它的方法和属性如下：
+
+- `new Map()` —— 创建 map。
+- `map.set(key, value)` —— 根据键存储值。
+- `map.get(key)` —— 根据键来返回值，如果 `map` 中不存在对应的 `key`，则返回 `undefined`。
+- `map.has(key)` —— 如果 `key` 存在则返回 `true`，否则返回 `false`。
+- `map.delete(key)` —— 删除指定键的值。
+- `map.clear()` —— 清空 map。
+- `map.size` —— 返回当前元素个数。
+
+map访问数据不是像字符串一样用[],而是用get方法 .map.get(key)
+
+`map[key]` **不是使用** `Map` **的正确方式 **  我们应该使用 `map` 方法：`set` 和 `get` 等。
+
+**Map 还可以使用对象作为键。**使用对象作为键是 `Map` 最值得注意和重要的功能之一。
+
+```js
+let john = { name: "John" };
+
+// 存储每个用户的来访次数
+let visitsCountMap = new Map();
+
+// john 是 Map 中的键
+visitsCountMap.set(john, 123);
+
+alert( visitsCountMap.get(john) ); // 123
+```
+
+>  **`Map` 是怎么比较键的？**
+
+`Map` 使用 SameValueZero 算法来比较键是否相等。它和严格等于 `===` 差不多，但区别是 `NaN` 被看成是等于 `NaN`。所以 `NaN` 也可以被用作键。
+
+这个算法不能被改变或者自定义。
+
+> **链式调用**
+
+每一次 `map.set` 调用都会返回 map 本身，所以我们可以进行“链式”调用：
+
+```javascript
+map.set('1', 'str1')
+  .set(1, 'num1')
+  .set(true, 'bool1');
+```
+
+跟数组不一样,数组的push和unshift都是返回数组的长度.map是返回map本身
+
+#### Map 迭代
+
+如果要在 `map` 里使用循环，可以使用以下三个方法：
+
+- `map.keys()` —— 遍历并返回所有的键（returns an iterable for keys），
+- `map.values()` —— 遍历并返回所有的值（returns an iterable for values），
+- `map.entries()` —— 遍历并返回所有的实体（returns an iterable for entries）`[key, value]`，`for..of` 在默认情况下使用的就是这个。
+
+例如：
+
+```javascript
+let recipeMap = new Map([
+  ['cucumber', 500],
+  ['tomatoes', 350],
+  ['onion',    50]
+]);
+
+// 遍历所有的键（vegetables）
+for (let vegetable of recipeMap.keys()) {
+  alert(vegetable); // cucumber, tomatoes, onion
+}
+
+// 遍历所有的值（amounts）
+for (let amount of recipeMap.values()) {
+  alert(amount); // 500, 350, 50
+}
+
+// 遍历所有的实体 [key, value]
+for (let entry of recipeMap) { // 与 recipeMap.entries() 相同
+  alert(entry); // cucumber,500 (and so on)
+}
+```
+
+>  **使用插入顺序**
+
+迭代的顺序与插入值的顺序相同。与普通的 `Object` 不同，`Map` **保留了此顺序**。
+
+除此之外，`Map` 有内置的 `forEach` 方法，与 `Array` 类似：
+
+```javascript
+// 对每个键值对 (key, value) 运行 forEach 函数
+recipeMap.forEach( (value, key, map) => {
+  alert(`${key}: ${value}`); // cucumber: 500 etc
+});
+```
+
+#### map和对象互换
+
+- 对象转map: `Object.entries(obj)`
+
+  如果我们想从一个已有的普通对象（plain object）来创建一个 `Map`，那么我们可以使用内建方法  Object.entries(obj),该返回对象的键/值对数组，该数组格式完全按照 `Map` 所需的格式。
+
+  所以可以像下面这样从一个对象创建一个 Map：
+
+  ```javascript
+  let obj = {
+    name: "John",
+    age: 30
+  };
+  
+  let map = new Map(Object.entries(obj));
+  
+  alert( map.get('name') ); // John
+  ```
+
+  这里，`Object.entries` 返回键/值对数组：`[ ["name","John"], ["age", 30] ]`。这就是 `Map` 所需要的格式。
+
+- map转对象:`Object.fromEntries`
+
+  `Object.fromEntries` 方法的作用是相反的：给定一个具有 `[key, value]` 键值对的数组，它会根据给定数组创建一个对象：
+
+  ```javascript
+  let prices = Object.fromEntries([
+    ['banana', 1],
+    ['orange', 2],
+    ['meat', 4]
+  ]);
+  
+  // 现在 prices = { banana: 1, orange: 2, meat: 4 }
+  
+  alert(prices.orange); // 2
+  ```
+
+  我们可以使用 `Object.fromEntries` 从 `Map` 得到一个普通对象（plain object）。
+
+#### Set
+
+`Set` 是一个特殊的类型集合 —— “值的集合”（没有键），它的每一个值只能出现一次。
+
+set没有取的方法
+
+它的主要方法如下：
+
+- `new Set(iterable)` —— 创建一个 `set`，如果提供了一个 `iterable` 对象（**通常是数组**），将会从数组里面复制值到 `set` 中。
+- `set.add(value)` —— 添加一个值，返回 set 本身
+- `set.delete(value)` —— 删除值，如果 `value` 在这个方法调用的时候存在则返回 `true` ，否则返回 `false`。
+- `set.has(value)` —— 如果 `value` 在 set 中，返回 `true`，否则返回 `false`。
+- `set.clear()` —— 清空 set。
+- `set.size` —— 返回元素个数。
+
+它的主要特点是，重复使用同一个值调用 `set.add(value)` 并不会发生什么改变。这就是 `Set` 里面的每一个值只出现一次的原因。
+
+####  Set 迭代（iteration）
+
+我们可以使用 `for..of` 或 `forEach` 来遍历 Set：
+
+```javascript
+let set = new Set(["oranges", "apples", "bananas"]);
+
+for (let value of set) alert(value);
+
+// 与 forEach 相同：
+set.forEach((value, valueAgain, set) => {
+  alert(value);
+});
+```
+
+#### 总结
+
+`Map` —— 是一个带键的数据项的集合。
+
+方法和属性如下：
+
+- `new Map([iterable])` —— 创建 map，可选择带有 `[key,value]` 对的 `iterable`（例如数组）来进行初始化。
+- `map.set(key, value)` —— 根据键存储值。
+- `map.get(key)` —— 根据键来返回值，如果 `map` 中不存在对应的 `key`，则返回 `undefined`。
+- `map.has(key)` —— 如果 `key` 存在则返回 `true`，否则返回 `false`。
+- `map.delete(key)` —— 删除指定键的值。
+- `map.clear()` —— 清空 map 。
+- `map.size` —— 返回当前元素个数。
+
+与普通对象 `Object` 的不同点：
+
+- 任何键、对象都可以作为键。
+- 有其他的便捷方法，如 `size` 属性。
+
+`Set` —— 是一组唯一值的集合。
+
+方法和属性：
+
+- `new Set([iterable])` —— 创建 set，可选择带有 `iterable`（例如数组）来进行初始化。
+- `set.add(value)` —— 添加一个值（如果 `value` 存在则不做任何修改），返回 set 本身。
+- `set.delete(value)` —— 删除值，如果 `value` 在这个方法调用的时候存在则返回 `true` ，否则返回 `false`。
+- `set.has(value)` —— 如果 `value` 在 set 中，返回 `true`，否则返回 `false`。
+- `set.clear()` —— 清空 set。
+- `set.size` —— 元素的个数。
+
+在 `Map` 和 `Set` 中迭代总是按照值插入的顺序进行的，所以我们不能说这些集合是无序的，但是我们不能对元素进行重新排序，也不能直接按其编号来获取元素。
+
+### 5.9 Object.keys，values，entries
+
+map遍历方法有`map.keys()`,`map.values()` `map.entries()` 方法
+
+同样的,对象Object也有相同的方法,但是和map的不太一样
+
+对于普通对象，下列这些方法是可用的：
+
+- Object.keys(obj )—— 返回一个包含该对象所有的键的数组。
+- Object.values(obj)—— 返回一个包含该对象所有的值的数组。
+- Object.entries(obj)—— 返回一个包含该对象所有 [key, value] 键值对的数组。
+
+|          | Map          | Object                                  |
+| :------- | :----------- | --------------------------------------- |
+| 调用语法 | `map.keys()` | `Object.keys(obj)`，而不是 `obj.keys()` |
+| 返回值   | 可迭代项     | “真正的”数组                            |
+
+第一个区别是，对于对象我们使用的调用语法是 `Object.keys(obj)`，而不是 `obj.keys()`。
+
+为什么会这样？主要原因是灵活性。请记住，在 JavaScript 中，对象是所有复杂结构的基础。因此，我们可能有一个自己创建的对象，比如 `data`，并实现了它自己的 `data.values()` 方法。同时，我们依然可以对它调用 `Object.values(data)` 方法。
+
+第二个区别是 `Object.*` 方法返回的是“真正的”数组对象，而不只是一个可迭代项。这主要是历史原因。
+
+举个例子：
+
+```javascript
+let user = {
+  name: "John",
+  age: 30
+};
+```
+
+- `Object.keys(user) = ["name", "age"]`
+- `Object.values(user) = ["John", 30]`
+- `Object.entries(user) = [ ["name","John"], ["age",30] ]`
+
+#### 转换对象
+
+对象缺少数组存在的许多方法，例如 `map` 和 `filter` 等。
+
+> 对象 -> 数组 -> 对象
+
+如果我们想应用它们，那么我们可以使用 `Object.entries`，然后使用 `Object.fromEntries`：
+
+1. 使用 `Object.entries(obj)` 从 `obj` 获取由键/值对组成的数组。
+2. 对该数组使用数组方法，例如 `map`。
+3. 对结果数组使用 `Object.fromEntries(array)` 方法，将结果转回成对象。
+
+例如，我们有一个带有价格的对象，并想将它们加倍：
+
+```javascript
+let prices = {
+  banana: 1,
+  orange: 2,
+  meat: 4,
+};
+
+let doublePrices = Object.fromEntries(
+  // 转换为数组，之后使用 map 方法，然后通过 fromEntries 再转回到对象
+  Object.entries(prices).map(([key, value]) => [key, value * 2])
+);
+
+alert(doublePrices.meat); // 8
+```
+
+### 5.10 解构赋值
+
+**解构赋值** 是一种特殊的语法，它使我们可以将数组或对象“拆包”为到一系列变量中，因为有时候使用变量更加方便。解构操作对那些具有很多参数和默认值等的函数也很奏效。
+
+#### 数组解构
+
+下面是一个将数组解构到变量中的例子：
+
+```javascript
+// 我们有一个存放了名字和姓氏的数组
+let arr = ["Ilya", "Kantor"]
+
+// 解构赋值
+// sets firstName = arr[0]
+// and surname = arr[1]
+let [firstName, surname] = arr;
+
+alert(firstName); // Ilya
+alert(surname);  // Kantor
+```
+
+当与 `split` 函数（或其他返回值是数组的函数）结合使用时，看起来就更优雅了：
+
+```javascript
+let [firstName, surname] = "Ilya Kantor".split(' ');
+```
+
+> **“解构”并不意味着“破坏”**
+
+这种语法叫做“解构赋值”，因为它通过将结构中的各元素复制到变量中来达到“解构”的目的。但数组本身是没有被修改的。
+
+> **忽略使用逗号的元素**
+
+数组中不想要的元素也可以通过添加额外的逗号来把它丢弃：
+
+```javascript
+// 不需要第二个元素
+let [firstName, , title] = ["Julius", "Caesar", "Consul", "of the Roman Republic"];
+
+alert( title ); // Consul
+```
+
+在上面的代码中，数组的第二个元素被跳过了，第三个元素被赋值给了 `title` 变量，数组中剩下的元素也都被跳过了（因为在这没有对应给它们的变量）。
+
+> **等号右侧可以是任何可迭代对象**
+
+实际上，我们可以将其与任何可迭代对象一起使用，而不仅限于数组：
+
+```javascript
+let [a, b, c] = "abc"; // ["a", "b", "c"]
+let [one, two, three] = new Set([1, 2, 3]);
+```
+
+> **赋值给等号左侧的任何内容**
+
+我们可以在等号左侧使用任何“可以被赋值的”东西。
+
+例如，一个对象的属性：
+
+```javascript
+let user = {};
+[user.name, user.surname] = "Ilya Kantor".split(' ');
+
+alert(user.name); // Ilya
+```
+
+> **与 .entries() 方法进行循环操作**
+
+我们可以将 .entries() 方法与解构语法一同使用，来遍历一个对象的“键—值”对：
+
+```javascript
+let user = {
+  name: "John",
+  age: 30
+};
+
+// 循环遍历键—值对  
+// Object.entries(user)是数组[[],[]]格式
+for (let [key, value] of Object.entries(user)) {
+  alert(`${key}:${value}`); // name:John, then age:30
+}
+```
+
+> **交换变量值的技巧**
+
+再也不用temp作为中间值交换了
+
+一个用于交换变量值的典型技巧：
+
+```javascript
+let guest = "Jane";
+let admin = "Pete";
+
+// 交换值：让 guest=Pete, admin=Jane
+[guest, admin] = [admin, guest];
+
+console.log(guest,admin); // Pete Jane（成功交换！）
+
+```
+
+##### 剩余的'...'
+
+如果我们不只是要获得第一个值，还要将后续的所有元素都收集起来 — 我们可以使用三个点 `"..."` 来再加一个参数来接收“剩余的”元素：
+
+```javascript
+let [name1, name2, ...rest] = ["Julius", "Caesar", "Consul", "of the Roman Republic"];
+
+alert(name1); // Julius
+alert(name2); // Caesar
+
+// 请注意，`rest` 的类型是数组
+alert(rest[0]); // Consul
+alert(rest[1]); // of the Roman Republic
+alert(rest.length); // 2
+```
+
+`rest` 的值就是数组中**剩下的元素组成**的**数组**。不一定要使用变量名 `rest`，我们也可以使用其他的变量名，只要确保它前面有三个点，并且在解构赋值的最后一个参数位置上就行了。
+
+##### 默认值
+
+如果赋值语句中，变量的数量多于数组中实际元素的数量，赋值不会报错。未赋值的变量被认为是 `undefined`：
+
+```javascript
+let [firstName, surname] = [];
+
+alert(firstName); // undefined
+alert(surname); // undefined
+```
+
+如果我们想要一个“默认”值给未赋值的变量，我们可以使用 `=` 来提供：
+
+```javascript
+// 默认值
+let [name = "Guest", surname = "Anonymous"] = ["Julius"];
+
+alert(name);    // Julius（来自数组的值）
+alert(surname); // Anonymous（默认值被使用了）
+```
+
+#### 对象解构
+
+解构赋值同样适用于对象。
+
+左边的值 是 要和 对象中的键值 相同. 而且左边的顺序可以随便,只要右边有就行
+
+基本语法是：
+
+```javascript
+let {var1, var2} = {var1:…, var2:…}
+```
+
+在等号右侧有一个已经存在的对象，我们想把它拆开到变量中。等号左侧包含了对象**相应属性**的一个“模式（pattern）”。在简单的情况下，等号左侧的就是 `{...}` 中的变量名列表。
+
+如果我们想把一个属性赋值给另一个名字的变量，比如把 `options.width` 属性赋值给变量 `w`，那么我们可以使用**冒号**来指定：
+
+```javascript
+let options = {
+  title: "Menu",
+  width: 100,
+  height: 200
+};
+
+// { sourceProperty: targetVariable }
+let {width: w, height: h, title} = options;
+
+// width -> w
+// height -> h
+// title -> title
+
+alert(title);  // Menu
+alert(w);      // 100
+alert(h);      // 200
+```
+
+冒号表示“什么值：赋值给谁”。上面的例子中，属性 `width` 被赋值给了 `w`，属性 `height` 被赋值给了 `h`，属性 `title` 被赋值给了同名变量。
+
+我们还可以将冒号和等号结合起来：
+
+```javascript
+let options = {
+  title: "Menu"
+};
+
+let {width: w = 100, height: h = 200, title} = options;
+
+alert(title);  // Menu
+alert(w);      // 100
+alert(h);      // 200
+```
+
+##### 剩余模式(pattern) "..."
+
+如果对象拥有的属性数量比我们提供的变量数量还多，该怎么办？我们可以只取其中的某一些属性，然后把“剩余的”赋值到其他地方吗？
+
+我们可以使用剩余模式（pattern），就像我们对数组那样看起来就像这样：
+
+```javascript
+let options = {
+  title: "Menu",
+  height: 200,
+  width: 100
+};
+
+// title = 名为 title 的属性
+// rest = 存有剩余属性的对象
+let {title, ...rest} = options;
+
+// 现在 title="Menu", rest={height: 200, width: 100}
+alert(rest.height);  // 200
+alert(rest.width);   // 100
+```
+
+#### 嵌套解构
+
+如果一个对象或数组**嵌套了其他的对象和数组**，我们可以在等号左侧使用更复杂的模式（pattern）来提取更深层的数据。
+
+在下面的代码中，`options` 的属性 `size` 是另一个对象，属性 `items` 是另一个数组。赋值语句中等号左侧的模式（pattern）具有相同的结构以从中提取值：
+
+```javascript
+let options = {
+  size: {
+    width: 100,
+    height: 200
+  },
+  items: ["Cake", "Donut"],
+  extra: true
+};
+
+// 为了清晰起见，解构赋值语句被写成多行的形式
+let {
+  size: { // 把 size 赋值到这里
+    width,
+    height
+  },
+  items: [item1, item2], // 把 items 赋值到这里
+  title = "Menu" // 在对象中不存在（使用默认值）
+} = options;
+
+alert(title);  // Menu
+alert(width);  // 100
+alert(height); // 200
+alert(item1);  // Cake
+alert(item2);  // Donut
+```
+
+#### 智能函数参数
+
+有时，一个函数有很多参数，其中大部分的参数都是可选的。对用户界面来说更是如此。想象一个创建菜单的函数。它可能具有宽度参数，高度参数，标题参数和项目列表等。
+
+我们可以把**所有参数**当作一个**对象**来传递，然后函数马上把这个对象解构成多个变量：
+
+```javascript
+// 我们传递一个对象给函数
+let options = {
+  title: "My menu",
+  items: ["Item1", "Item2"]
+};
+
+// ……然后函数马上把对象展开成变量
+// 形参 是一个 对象
+function showMenu({title = "Untitled", width = 200, height = 100, items = []}) {
+  // title, items – 提取于 options，
+  // width, height – 使用默认值
+  alert( `${title} ${width} ${height}` ); // My Menu 200 100
+  alert( items ); // Item1, Item2
+}
+
+showMenu(options); // 实参是 options 这个对象
+```
+
+#### 总结
+
+- 解构赋值可以立即将一个对象或数组映射到多个变量上。
+
+- 解构对象的完整语法：
+
+  ```javascript
+  let {prop : varName = default, ...rest} = object
+  ```
+
+  这表示属性 `prop` 会被赋值给变量 `varName`，如果没有这个属性的话，就会使用默认值 `default`。
+
+  没有对应映射的对象属性会被复制到 `rest` 对象。
+
+- 解构数组的完整语法：
+
+  ```javascript
+  let [item1 = default, item2, ...rest] = array
+  ```
+
+  数组的第一个元素被赋值给 `item1`，第二个元素被赋值给 `item2`，剩下的所有元素被复制到另一个数组 `rest`。
+
+- 从嵌套数组/对象中提取数据也是可以的，此时等号左侧必须和等号右侧有相同的结构。
+
+### 5.11 日期和时间
+
+新的**内建对象**：日期（Date）。该对象存储日期和时间，并提供了日期/时间的管理方法。
+
+#### 创建
+
+创建一个新的 `Date` 对象，只需要调用 `new Date()`，在调用时可以带有下面这些参数之一：
+
+- `new Date()`
+
+  不带参数 —— 创建一个表示当前日期和时间的 `Date` 对象：
+
+  ```js
+  let now = new Date();
+  alert( now ); // 显示当前的日期/时间
+  ```
+
+  **new Date(milliseconds)**  milliseconds是整数参数,被称为**时间戳.**它是自 1970-01-01 00:00:00 以来经过的毫秒数
+
+  这是一种日期的轻量级数字表示形式。我们通常使用 `new Date(timestamp)` 通过时间戳来创建日期，并可以使用 `date.getTime()` 将现有的 `Date` 对象转化为时间戳
+  
+  **new Date(datestring)**
+  
+  如果只有一个参数，并且是**字符串**，那么它会被自动解析。该算法与 `Date.parse` 所使用的算法相同
+  
+  **new Date(year, month, date, hours, minutes, seconds, ms)**
+  
+  使用当前时区中的给定组件创建日期。只有前两个参数是必须的。
+  
+  - `year` 必须是四位数：`2013` 是合法的，`98` 是不合法的。
+  - `month` 计数从 `0`（一月）开始，到 `11`（十二月）结束。
+  - `date` 是当月的具体某一天，如果缺失，则为默认值 `1`。
+  - 如果 `hours/minutes/seconds/ms` 缺失，则均为默认值 `0`。
+  
+  例如：
+  
+  ```javascript
+  new Date(2011, 0, 1, 0, 0, 0, 0); // 1 Jan 2011, 00:00:00
+  new Date(2011, 0, 1); // 同样，时分秒等均为默认值 0
+  ```
+
+#### 访问日期组件
+
+从 `Date` 对象中访问年、月等信息有多种方式：
+
+- **getFullYear()**
+
+  获取年份（4 位数）
+
+- **getMonth()**
+
+  获取月份，**从 0 到 11**。
+
+- **getDate()**
+
+  获取当月的具体日期，从 1 到 31，这个方法名称可能看起来有些令人疑惑。
+
+- **getHours()**，**getMinutes()**，**getSeconds()**，**getMilliseconds()**
+
+  获取相应的时间组件。
+
+- **getDay()**
+
+  获取一周中的第几天，从 `0`（星期日）到 `6`（星期六）。第一天始终是星期日，在某些国家可能不是这样的习惯，但是这不能被改变。
+
+- **getTime()**
+
+  返回日期的**时间戳** —— 从 1970-1-1 00:00:00 UTC+0 开始到现在所经过的毫秒数。
+
+- **getTimezoneOffset()**
+
+  返回 UTC 与本地时区之间的时差，以分钟为单位：
+
+  ```javascript
+  // 如果你在时区 UTC-1，输出 60
+  // 如果你在时区 UTC+3，输出 -180
+  alert( new Date().getTimezoneOffset() );
+  ```
+
+#### 设置日期组件
+
+下列方法可以设置日期/时间组件：
+
+- **setFullYear(year, [month], [date])**
+- **setMonth(month, [date])**
+- **setDate(date)**
+- **setHours(hour, [min], [sec], [ms])**
+- **setMinutes(min, [sec], [ms])**
+- **setSeconds(sec, [ms])**
+- **setMilliseconds(ms)**
+- **setTime(milliseconds)**（使用自 1970-01-01 00:00:00 UTC+0 以来的毫秒数来设置整个日期）
+
+我们可以看到，有些方法可以一次性设置多个组件，比如 `setHours`。未提及的组件不会被修改。
+
+举个例子：
+
+```javascript
+let today = new Date();
+
+today.setHours(0);
+alert(today); // 日期依然是今天，但是小时数被改为了 0
+
+today.setHours(0, 0, 0, 0);
+alert(today); // 日期依然是今天，时间为 00:00:00。
+```
+
+#### 日期转化为数字，日期差值
+
+当 `Date` 对象被转化为数字时，得到的是对应的时间戳，与使用 `date.getTime()` 的结果相同：
+
+```javascript
+let date = new Date();
+alert(+date); // 以毫秒为单位的数值，与使用 date.getTime() 的结果相同
+```
+
+有一个重要的副作用：日期可以相减，相减的结果是以毫秒为单位时间差。
+
+#### Date.now()
+
+如果我们仅仅想要测量时间间隔，我们不需要 `Date` 对象。
+
+有一个特殊的方法 `Date.now()`，它会返回当前的时间戳。
+
+它相当于 `new Date().getTime()`，但它不会创建中间的 `Date` 对象。因此它更快，而且不会对垃圾处理造成额外的压力。
+
+这种方法很多时候因为方便，又或是因性能方面的考虑而被采用，例如使用 JavaScript 编写游戏或其他的特殊应用场景。
+
+因此这样做可能会更好：
+
+```javascript
+let start = Date.now(); // 从 1 Jan 1970 至今的时间戳
+
+// do the job
+for (let i = 0; i < 100000; i++) {
+  let doSomething = i * i * i;
+}
+
+let end = Date.now(); // 完成
+
+alert( `The loop took ${end - start} ms` ); // 相减的是时间戳，而不是日期
+```
+
+#### Date.parse(str)
+
+**Date.parse(str)**方法可以从一个**字符串**中读取日期。
+
+字符串的格式应该为：`YYYY-MM-DDTHH:mm:ss.sssZ`，其中：
+
+- `YYYY-MM-DD` —— 日期：年-月-日。
+- 字符 `"T"` 是一个分隔符。
+- `HH:mm:ss.sss` —— 时间：小时，分钟，秒，毫秒。
+- 可选字符 `'Z'` 为 `+-hh:mm` 格式的时区。单个字符 `Z` 代表 UTC+0 时区。
+
+简短形式也是可以的，比如 `YYYY-MM-DD` 或 `YYYY-MM`，甚至可以是 `YYYY`。
+
+`Date.parse(str)` 调用会解析给定格式的字符串，并返回时间戳（自 1970-01-01 00:00:00 起所经过的毫秒数）。如果给定字符串的格式不正确，则返回 `NaN`。
+
+举个例子：
+
+```javascript
+let ms = Date.parse('2012-01-26T13:51:50.417-07:00');
+
+alert(ms); // 1327611110417  (时间戳)
+```
+
+#### 总结
+
+- 在 JavaScript 中，日期和时间使用 [Date](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Date) 对象来表示。我们不能只创建日期，或者只创建时间，`Date` 对象总是同时创建两者。
+- 月份从 0 开始计数（对，一月是 0）。
+- 一周中的某一天 `getDay()` 同样从 0 开始计算（0 代表星期日）。
+- 当设置了超出范围的组件时，`Date` 会进行自我校准。这一点对于日/月/小时的加减很有用。
+- 日期可以相减，得到的是以毫秒表示的两者的差值。因为当 `Date` 被转换为数字时，`Date` 对象会被转换为时间戳。
+- 使用 `Date.now()` 可以更快地获取当前时间的时间戳。
+
+### 5.12 JSON方法,toJSON
+
+假设我们有一个复杂的对象，我们希望将其转换为字符串，以通过网络发送，或者只是为了在日志中输出它。
+
+#### JSON.stringify
+
+JSON（JavaScript Object Notation）是表示值和对象的通用格式。在 [RFC 4627](http://tools.ietf.org/html/rfc4627) 标准中有对其的描述。最初它是为 JavaScript 而创建的，但许多其他编程语言也有用于处理它的库。因此，当客户端使用 JavaScript 而服务器端是使用 Ruby/PHP/Java 等语言编写的时，使用 JSON 可以很容易地进行数据交换。
+
+JavaScript 提供了如下方法：
+
+- `JSON.stringify` 将对象转换为 JSON。
+- `JSON.parse` 将 JSON 转换回对象。
+
+方法 `JSON.stringify(student)` 接收对象并将其转换为字符串。
+
+得到的 `json` 字符串是一个被称为 **JSON 编码（JSON-encoded）** 或 **序列化（serialized）** 或 **字符串化（stringified）** 或 **编组化（marshalled）** 的对象。我们现在已经准备好通过有线发送它或将其放入普通数据存储。
+
+请注意，JSON 编码的对象与对象字面量有几个重要的区别：
+
+- 字符串使用**双引号**。JSON 中没有单引号或反引号。所以 `'John'` 被转换为 `"John"`。
+- 对象**属性名称**也是**双引号**的。这是强制性的。所以 `age:30` 被转换成 `"age":30`。
+
+`JSON.stringify` 也可以应用于**原始（primitive）数据类型**。
+
+JSON 支持以下数据类型：
+
+- Objects `{ ... }`
+- Arrays `[ ... ]`
+- Primitives：
+  - strings，
+  - numbers，
+  - boolean values `true/false`，
+  - `null`。
+
+JSON 是语言无关的纯数据规范，因此一些特定于 JavaScript 的对象属性会被 `JSON.stringify` 跳过。
+
+即：
+
+- 函数属性（方法）。
+- Symbol 类型的属性。
+- 存储 `undefined` 的属性。
+
+#### 排除和转换：replacer
+
+`JSON.stringify` 的完整语法是：
+
+```javascript
+let json = JSON.stringify(value[, replacer, space])
+```
+
+- value
+
+  要编码的值。
+
+- replacer
+
+  要编码的属性数组或映射函数 `function(key, value)`。
+
+- space
+
+  用于格式化的空格数量
+
+大部分情况，`JSON.stringify` 仅与第一个参数一起使用。但是，如果我们需要微调替换过程，比如过滤掉循环引用，我们可以使用 `JSON.stringify` 的第二个参数。
+
+#### 格式化：space
+
+`JSON.stringify(value, replacer, spaces)` 的第三个参数是用于优化格式的空格数量。
+
+以前，所有字符串化的对象都没有缩进和额外的空格。如果我们想通过网络发送一个对象，那就没什么问题。`space` 参数专门用于调整出更美观的输出。
+
+这里的 `space = 2` 告诉 JavaScript 在多行中显示嵌套的对象，对象内部缩紧 2 个空格：
+
+```javascript
+let user = {
+  name: "John",
+  age: 25,
+  roles: {
+    isAdmin: false,
+    isEditor: true
+  }
+};
+
+alert(JSON.stringify(user, null, 2));
+/* 两个空格的缩进：
+{
+  "name": "John",
+  "age": 25,
+  "roles": {
+    "isAdmin": false,
+    "isEditor": true
+  }
+}
+*/
+
+/* 对于 JSON.stringify(user, null, 4) 的结果会有更多缩进：
+{
+    "name": "John",
+    "age": 25,
+    "roles": {
+        "isAdmin": false,
+        "isEditor": true
+    }
+}
+*/
+```
+
+`spaces` 参数仅用于日志记录和美化输出。
+
+#### 自定义 “toJSON”
+
+像 `toString` 进行字符串转换，对象也可以提供 `toJSON` 方法来进行 JSON 转换。如果可用，`JSON.stringify` 会自动调用它。
+
+现在让我们为对象 `room` 添加一个自定义的 `toJSON`：
+
+```javascript
+let room = {
+  number: 23,
+  toJSON() {
+    return this.number;
+  }
+};
+
+let meetup = {
+  title: "Conference",
+  room
+};
+
+alert( JSON.stringify(room) ); // 23
+
+alert( JSON.stringify(meetup) );
+/*
+  {
+    "title":"Conference",
+    "room": 23
+  }
+*/
+```
+
+正如我们所看到的，`toJSON` 既可以用于直接调用 `JSON.stringify(room)` 也可以用于当 `room` 嵌套在另一个编码对象中时。
+
+#### JSON.parse
+
+要解码 JSON 字符串，我们需要另一个方法 **JSON.parse**
+
+语法：
+
+```javascript
+let value = JSON.parse(str, [reviver]);
+```
+
+- str
+
+  要解析的 JSON 字符串。
+
+- reviver
+
+  可选的函数 function(key,value)，该函数将为每个 `(key, value)` 对调用，并可以对值进行转换。
+
+例如：
+
+```javascript
+// 字符串化数组
+let numbers = "[0, 1, 2, 3]";
+
+numbers = JSON.parse(numbers);
+
+alert( numbers[1] ); // 1
+```
+
+对于嵌套对象：
+
+```javascript
+let userData = '{ "name": "John", "age": 35, "isAdmin": false, "friends": [0,1,2,3] }';
+
+let user = JSON.parse(userData);
+
+alert( user.friends[1] ); // 1
+```
+
+#### 总结
+
+- JSON 是一种数据格式，具有自己的独立标准和大多数编程语言的库。
+- JSON 支持 object，array，string，number，boolean 和 `null`。
+- JavaScript 提供序列化（serialize）成 JSON 的方法 JSON.stringify和解析 JSON 的方法 JSON.parse
+- 这两种方法都支持用于智能读/写的转换函数。
+- 如果一个对象具有 `toJSON`，那么它会被 `JSON.stringify` 调用。
