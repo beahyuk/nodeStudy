@@ -1,0 +1,16 @@
+[2020-07-24T17:04:04.148] [15320] ::ffff:172.25.78.33 - "http POST /user/login application/json" 200 48 258ms
+------------------------- start
+req type: application/json
+req query: {}
+req body: {"username":"root","password":"e10adc3949ba59abbe56e057f20f883e"}
+res type: application/json
+res body: {"status":-1,"msg":"username or password wrong"}
+------------------------- end
+[2020-07-24T17:04:08.754] [15320] ::ffff:172.25.78.33 - "http POST /user/login application/json" 200 86 10ms
+------------------------- start
+req type: application/json
+req query: {}
+req body: {"username":"admin","password":"e10adc3949ba59abbe56e057f20f883e"}
+res type: application/json
+res body: {"status":200,"msg":"success","data":{"token":"6fc3146b-838c-4bb5-870c-9c1d5a9bfb91"}}
+------------------------- end
