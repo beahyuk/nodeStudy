@@ -3720,11 +3720,14 @@ let counter = makeCounter();
 
 也就是说：JavaScript 中的函数会自动通过隐藏的 `[[Environment]]` 属性记住创建它们的位置，所以它们都可以访问外部变量。
 
-在面试时，前端开发者通常会被问到“什么是闭包？”,从三方面回答
+在面试时，前端开发者通常会被问到“**什么是闭包**？”,从三方面回答
 
 1. 闭包的定义
 2. 解释为什么JavaScript的所有函数都是闭包,词法环境
 3. 可能的关于[[Environment]] 属性和词法环境原理的技术细节
+
+- 闭包是指内部函数能访问到其所在的外部函数中的参数和变量
+- 所有的JavaScript函数都是闭包的,因为函数在创建时,会有个隐藏的environment属性,该属性保存了 对创建该函数的词法环境的引用.也就是说,函数会通过environment属性记住创建它们的位置.在函数调用时,会创建一个新的词法环境,包含该函数的内部变量和参数,它的外部词法环境的引用是获取于该函数的 environment属性.因此所有的函数都可以访问到外部变量.所以说所有的JavaScript的函数都是闭包
 
 #### 垃圾收集
 
@@ -3755,4 +3758,39 @@ result(); // 1000
 在这段代码中，result实际上就是闭包f2函数。它一共运行了两次，第一次的值是999，第二次的值是1000。这证明了，函数f1中的局部变量n一直保存在内存中，并没有在f1调用后被自动清除。
 
 为什么会这样呢？原因就在于**f1是f2的父函数，而f2被赋给了一个全局变量**，这导致f2始终在内存中，而f2的存在依赖于f1，因此f1也始终在内存中，不会在调用结束后，被垃圾回收机制（garbage collection）回收。
+
+两个关于闭包的经典例子
+
+匿名函数的this指向全局window,但是对于闭包来说,匿名函数的指向就不一定了
+
+```js
+var name = "The Window";
+var object = {
+  name : "My Object",
+  getNameFunc : function(){
+    return function(){
+      return this.name;
+    };
+  }
+};
+alert(object.getNameFunc()());  //"The Window"（在非严格模式下）
+```
+
+```js
+var name = "The Window";
+var object = {
+  name : "My Object",
+  getNameFunc : function(){
+    var that = this;
+    return function(){
+      return that.name;
+    };
+  }
+};
+alert(object.getNameFunc()());  //"My Object"（在非严格模式下）
+```
+
+解释:以上代码先创建了一个全局变量name，又创建了一个包含name属性的对象。这个对象还包含一个方法——getNameFunc()，它返回一个匿名函数，而匿名函数又返回this.name。由于getNameFunc()返回一个函数，因此调用object.getNameFunc()()就会立即调用它返回的函数，结果就是返回一个字符串。然而，这个例子返回的字符串是"The Window"，即全局name变量的值。为什么匿名函数没有取得其包含作用域（或外部作用域）的this对象呢？
+
+因为每个函数在被调用时都会自动取得两个特殊变量：this和arguments。内部函数在搜索这两个变量时，只会搜索到其活动对象为止，因此永远不可能直接访问外部函数中的这两个变量；不过，把外部作用域中的this对象保存在一个闭包能够访问到的变量里，就可以让闭包访问该对象了，
 

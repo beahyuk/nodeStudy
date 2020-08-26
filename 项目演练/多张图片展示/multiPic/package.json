@@ -1,5 +1,5 @@
 {
-  "name": "vue-web",
+  "name": "multi-pic",
   "version": "1.0.0",
   "description": "A Vue.js project",
   "author": "",
@@ -13,7 +13,9 @@
     "axios": "^0.19.2",
     "element-ui": "^2.13.2",
     "js-md5": "^0.7.3",
+    "swiper": "^5.3.6",
     "vue": "^2.5.2",
+    "vue-awesome-swiper": "^4.1.1",
     "vue-router": "^3.0.1",
     "vuex": "^3.5.1"
   },
