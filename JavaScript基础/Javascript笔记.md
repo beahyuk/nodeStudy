@@ -3794,3 +3794,338 @@ alert(object.getNameFunc()());  //"My Object"（在非严格模式下）
 
 因为每个函数在被调用时都会自动取得两个特殊变量：this和arguments。内部函数在搜索这两个变量时，只会搜索到其活动对象为止，因此永远不可能直接访问外部函数中的这两个变量；不过，把外部作用域中的this对象保存在一个闭包能够访问到的变量里，就可以让闭包访问该对象了，
 
+### 6.5 全局对象
+
+#### 总结
+
+- 全局对象包含应该在任何位置都可见的变量。
+
+  其中包括 JavaScript 的内建方法，例如 “Array” 和环境特定（environment-specific）的值，例如 `window.innerHeight` — 浏览器中的窗口高度。
+
+- 全局对象有一个通用名称 `globalThis`。
+
+  ……但是更常见的是使用“老式”的环境特定（environment-specific）的名字，例如 `window`（浏览器）和 `global`（Node.js）。由于 `globalThis` 是最近的提议，因此在 non-Chromium Edge 中不受支持（但可以进行 polyfills）。
+
+- 仅当值对于我们的项目而言确实是全局的时，才应将其存储在全局对象中。并保持其数量最少。
+
+- 在浏览器中，除非我们使用 [modules](https://zh.javascript.info/modules)，否则使用 `var` 声明的全局函数和变量会成为全局对象的属性。
+
+- 为了使我们的代码面向未来并更易于理解，我们应该使用直接的方式访问全局对象的属性，如 `window.x`。
+
+### 6.6 函数对象,NFE
+
+函数是一个值,它的类型是对象.所以可以调用对象的属性访问.函数被称为 **行为对象**
+
+我们已经知道，在 JavaScript 中，函数就是值。
+
+JavaScript 中的每个值都有一种类型，那么函数是什么类型呢？
+
+在 JavaScript 中，函数就是对象。
+
+一个容易理解的方式是把函数想象成可被调用的“行为对象（action object）”。我们不仅可以调用它们，还能把它们当作对象来处理：增/删属性，按引用传递等。
+
+#### 属性"name"
+
+函数对象包含一些便于使用的属性。
+
+比如，一个函数的名字可以通过属性 “name” 来访问
+
+规范中把这种特性叫做「上下文命名」。如果函数自己没有提供，那么在赋值中，会根据上下文来推测一个.
+
+```js
+let sayHi = function() {
+  alert("Hi");
+};
+
+alert(sayHi.name); // sayHi（有名字！）
+```
+
+#### 属性"length"
+
+还有另一个内置属性 “length”，它返回函数入参的个数，比如：
+
+```js
+function f1(a) {}
+function f2(a, b) {}
+function many(a, b, ...more) {}
+
+alert(f1.length); // 1
+alert(f2.length); // 2
+alert(many.length); // 2  rest剩余参数不在里面
+```
+
+#### 命名函数表达式
+
+命名函数表达式（NFE，Named Function Expression），指带有名字的函数表达式的术语。
+
+例如，让我们写一个普通的函数表达式：
+
+```javascript
+let sayHi = function(who) {
+  alert(`Hello, ${who}`);
+};
+```
+
+然后给它加一个名字：
+
+```javascript
+let sayHi = function func(who) {
+  alert(`Hello, ${who}`);
+};  // 这个就是命名函数表达式,func
+```
+
+首先请注意，它仍然是一个**函数表达式**。在 `function` 后面加一个名字 `"func"` 没有使它成为一个函数声明，因为它仍然是作为赋值表达式中的一部分被创建的。
+
+添加这个名字当然也没有打破任何东西。
+
+函数依然可以通过 `sayHi()` 来调用
+
+关于名字 `func` 有两个特殊的地方，这就是添加它的原因：
+
+1. 它允许函数在内部引用自己。
+2. 它在函数外是不可见的。
+
+例如，下面的函数 `sayHi` 会在没有入参 `who` 时，以 `"Guest"` 为入参调用自己：
+
+```javascript
+let sayHi = function func(who) {
+  if (who) {
+    alert(`Hello, ${who}`);
+  } else {
+    func("Guest"); // 使用 func 再次调用函数自身
+  }
+};
+
+sayHi(); // Hello, Guest
+
+// 但这不工作：
+func(); // Error, func is not defined（在函数外不可见）
+```
+
+#### 总结
+
+函数就是对象。
+
+我们介绍了它们的一些属性：
+
+- `name` —— 函数的名字。通常取自函数定义，但如果函数定义时没设定函数名，JavaScript 会尝试通过函数的上下文猜一个函数名（例如把赋值的变量名取为函数名）。
+- `length` —— 函数定义时的入参的个数。Rest 参数不参与计数。
+
+如果函数是通过函数表达式的形式被声明的（不是在主代码流里），并且附带了名字，那么它被称为命名函数表达式（Named Function Expression）。这个名字可以用于在该函数内部进行自调用，例如递归调用等。
+
+此外，函数可以带有额外的属性。很多知名的 JavaScript 库都充分利用了这个功能。
+
+### 6.7 "new Function"语法
+
+#### 总结
+
+语法：
+
+```javascript
+let func = new Function ([arg1, arg2, ...argN], functionBody);
+```
+
+由于历史原因，参数也可以按逗号分隔符的形式给出。
+
+以下三种声明的含义相同：
+
+```javascript
+new Function('a', 'b', 'return a + b'); // 基础语法
+new Function('a,b', 'return a + b'); // 逗号分隔
+new Function('a , b', 'return a + b'); // 逗号和空格分隔
+```
+
+使用 `new Function` 创建的函数，它的 `[[Environment]]` 指向全局词法环境，而不是函数所在的外部词法环境。因此，我们不能在 `new Function` 中直接使用外部变量。不过这样是好事，这有助于降低我们代码出错的可能。并且，从代码架构上讲，显式地使用参数传值是一种更好的方法，并且避免了与使用压缩程序而产生冲突的问题。
+
+### 6.8 调度: setTimeout 和 setInterval
+
+有时我们并不想立即执行一个函数，而是等待特定一段时间之后再执行。这就是所谓的“计划调用（scheduling a call）”。
+
+目前有两种方式可以实现：
+
+- `setTimeout` 允许我们将函数推迟到一段时间间隔之后再执行。
+- `setInterval` 允许我们重复运行一个函数，从一段时间间隔之后开始运行，之后以该时间间隔连续重复运行该函数。
+
+#### setTimeout
+
+语法：
+
+```javascript
+let timerId = setTimeout(func|code, [delay], [arg1], [arg2], ...)
+```
+
+参数说明：
+
+- `func|code`
+
+  想要执行的函数或代码字符串。 一般传入的都是函数。由于某些历史原因，支持传入代码字符串，但是不建议这样做。
+
+- `delay`
+
+  执行前的延时，以毫秒为单位（1000 毫秒 = 1 秒），默认值是 0；
+
+- `arg1`，`arg2`…
+
+  要传入被执行函数（或代码字符串）的参数列表（IE9 以下不支持）
+
+带参数的情况：
+
+```javascript
+function sayHi(phrase, who) {
+  alert( phrase + ', ' + who );
+}
+
+setTimeout(sayHi, 1000, "Hello", "John"); // Hello, John
+```
+
+如果第一个参数位传入的是**字符串**，JavaScript 会自动为其创建一个函数。
+
+所以这么写也是可以的：
+
+```javascript
+setTimeout("alert('Hello')", 1000);
+```
+
+但是，不建议使用字符串，我们可以使用箭头函数代替它们，如下所示：
+
+```javascript
+setTimeout(() => alert('Hello'), 1000);
+```
+
+> **传入一个函数，但不要执行它**
+
+新手开发者有时候会误将一对括号 `()` 加在函数后面：
+
+```javascript
+// 错的！
+setTimeout(sayHi(), 1000);
+```
+
+这样不行，因为 `setTimeout` 期望得到一个对函数的引用。而这里的 `sayHi()` 很明显是在执行函数，所以实际上传入 `setTimeout` 的是 **函数的执行结果**。在这个例子中，`sayHi()` 的执行结果是 `undefined`（也就是说函数没有返回任何结果），所以实际上什么也没有调度。
+
+**用 clearTimeout 来取消调度**
+
+`setTimeout` 在调用时会返回一个“定时器标识符（timer identifier）”，在我们的例子中是 `timerId`，我们可以使用它来取消执行。
+
+取消调度的语法：
+
+```javascript
+let timerId = setTimeout(...);
+clearTimeout(timerId);
+```
+
+#### setInterval
+
+`setInterval` 方法和 `setTimeout` 的语法相同：
+
+```javascript
+let timerId = setInterval(func|code, [delay], [arg1], [arg2], ...)
+```
+
+所有参数的意义也是相同的。不过与 `setTimeout` 只执行一次不同，`setInterval` 是每间隔给定的时间周期性执行。
+
+想要阻止后续调用，我们需要调用 `clearInterval(timerId)`。
+
+#### 嵌套的 setTimeout
+
+**周期性调度**有两种方式。定时器有两种方式,一个是setInte
+
+一种是使用 `setInterval`，另外一种就是**嵌套**的 `setTimeout`，就像这样：
+
+```javascript
+/** instead of:
+let timerId = setInterval(() => alert('tick'), 2000);
+*/
+
+let timerId = setTimeout(function tick() {
+  alert('tick');
+  timerId = setTimeout(tick, 2000); // (*)
+}, 2000);
+```
+
+上面这个 `setTimeout` 在当前这一次函数执行完时 `(*)` 立即调度下一次调用。
+
+嵌套的 `setTimeout` 要比 `setInterval` 灵活得多。采用这种方式可以根据当前执行结果来调度下一次调用，因此下一次调用可以与当前这一次不同。
+
+**嵌套的 setTimeout 能够精确地设置两次执行之间的延时，而 setInterval 却不能。**
+
+下面来比较这两个代码片段。第一个使用的是 `setInterval`：
+
+```javascript
+let i = 1;
+setInterval(function() {
+  func(i++);
+}, 100);
+```
+
+第二个使用的是嵌套的 `setTimeout`：
+
+```javascript
+let i = 1;
+setTimeout(function run() {
+  func(i++);
+  setTimeout(run, 100);
+}, 100);
+```
+
+**使用 setInterval 时，func 函数的实际调用间隔要比代码中设定的时间间隔要短！**	
+
+这也是正常的，因为 `func` 的执行所花费的时间“消耗”了一部分间隔时间。
+
+也可能出现这种情况，就是 `func` 的执行所花费的时间比我们预期的时间更长，并且超出了 100 毫秒。
+
+在这种情况下，JavaScript 引擎会等待 `func` 执行完成，然后检查调度程序，如果时间到了，则 **立即** 再次执行它。
+
+极端情况下，如果函数每次执行时间都超过 `delay` 设置的时间，那么每次调用之间将**完全没有停顿。**(不符合定时器的要求了)
+
+**嵌套的 setTimeout 就能确保延时的固定（这里是 100 毫秒）。**
+
+这是因为下一次调用是在前一次调用完成时再调度的。
+
+当一个函数传入 `setInterval/setTimeout` 时，将为其创建一个内部引用，并保存在调度程序中。这样，即使这个函数没有其他引用，也能防止垃圾回收器（GC）将其回收。
+
+```javascript
+// 在调度程序调用这个函数之前，这个函数将一直存在于内存中
+setTimeout(function() {...}, 100);
+```
+
+> **垃圾回收和 setInterval/setTimeout 回调（callback）**
+
+对于 `setInterval`，传入的函数也是一直存在于内存中，直到 `clearInterval` 被调用。
+
+这里还要提到一个副作用。如果函数引用了外部变量（译注：闭包），那么只要这个函数还存在，外部变量也会随之存在。它们可能比函数本身占用更多的内存。因此，当我们不再需要调度函数时，最好取消它，即使这是个（占用内存）很小的函数。
+
+#### 零延时的 setTimeout
+
+这儿有一种特殊的用法：`setTimeout(func, 0)`，或者仅仅是 `setTimeout(func)`。
+
+这样调度可以让 `func` 尽快执行。但是只有在当前正在执行的脚本执行完成后，调度程序才会调用它。
+
+也就是说，该函数被调度在当前脚本执行完成“之后”立即执行。
+
+例如，下面这段代码会先输出 “Hello”，然后立即输出 “World”：
+
+```javascript
+setTimeout(() => alert("World"));
+
+alert("Hello");
+```
+
+#### 总结
+
+- `setTimeout(func, delay, ...args)` 和 `setInterval(func, delay, ...args)` 方法允许我们在 `delay` 毫秒之后运行 `func` 一次或以 `delay` 毫秒为时间间隔周期性运行 `func`。
+- 要取消函数的执行，我们应该调用 `clearInterval/clearTimeout`，并将 `setInterval/setTimeout` 返回的值作为入参传入。
+- 嵌套的 `setTimeout` 比 `setInterval` 用起来更加灵活，允许我们更精确地设置两次执行之间的时间。
+- 零延时调度 `setTimeout(func, 0)`（与 `setTimeout(func)` 相同）用来调度需要尽快执行的调用，但是会在当前脚本执行完成后进行调用。
+- 浏览器会将 `setTimeout` 或 `setInterval` 的五层或更多层嵌套调用（调用五次之后）的最小延时限制在 4ms。这是历史遗留问题。
+
+请注意，所有的调度方法都不能 **保证** 确切的延时。
+
+例如，浏览器内的计时器可能由于许多原因而变慢：
+
+- CPU 过载。
+- 浏览器页签处于后台模式。
+- 笔记本电脑用的是电池供电（译注：使用电池供电会以降低性能为代价提升续航）。
+
+所有这些因素，可能会将定时器的最小计时器分辨率（最小延迟）增加到 300ms 甚至 1000ms，具体以浏览器及其设置为准。
+
