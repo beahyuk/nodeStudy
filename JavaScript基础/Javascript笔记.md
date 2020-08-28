@@ -3431,8 +3431,6 @@ function f(arg1, ...rest, arg2) { // arg2 在 ...rest 后面？！
 
 因此，当我们需要这些功能时，最好使用 rest 参数。
 
-
-
 > 箭头函数是没有 `"arguments"`
 
 如果我们在箭头函数中访问 `arguments`，访问到的 `arguments` 并不属于箭头函数，而是属于箭头函数外部的“普通”函数。
@@ -3505,7 +3503,7 @@ let str = "Hello";
 alert( [...str] ); // H,e,l,l,o
 ```
 
-我们还可以使用 `Array.from` 来实现，因为该方法会将一个可迭代对象（如字符串）转换为数组：
+我们还可以使用 `Array.from` 来实现，因为该方法会将一个**可迭代对象**（如字符串）转换为数组：
 
 ```javascript
 let str = "Hello";
@@ -4128,4 +4126,451 @@ alert("Hello");
 - 笔记本电脑用的是电池供电（译注：使用电池供电会以降低性能为代价提升续航）。
 
 所有这些因素，可能会将定时器的最小计时器分辨率（最小延迟）增加到 300ms 甚至 1000ms，具体以浏览器及其设置为准。
+
+### 6.9 装饰者模式和转发,call/apply
+
+#### 装饰者模式
+
+- 装饰者模式的定义
+  - 装饰者模式: 在不改变对象自身的基础上,动态地添加功能代码.
+  - 根据描述,装饰者显然比继承等方式更灵活,而且不污染原来的代码,代码逻辑松耦合
+- 装饰者应用场景
+  - 装饰者模式由于松耦合,多用于一开始 对象的功能 不确定的时候 或者 对象的功能经常变动的时候.尤其是在参数检查,参数拦截等场景. 
+- 注意：装饰器需要保存函数的运行结果，并且返回。
+- 装饰器decorator接受一个参数,也就是我们被装饰的目标方法,处理完扩展的内容以后再返回一个方法,供以后调用,同时**也失去了对原方法对象的访问**. 当我们对某个应用了装饰以后,其实就**改变**了**被装饰方法**的**入口引用**,使其重新指向了装饰器返回的方法的入口点,从而来实现我们对原函数的扩展,修改等操作.参照来源:<https://segmentfault.com/a/1190000014495089>
+  - 实际应用:<https://www.cnblogs.com/lvmylife/p/7242347.html>
+- 装饰器模式的类型
+  - 类的装饰
+  - 方法的装饰(对象中的方法/函数)
+
+> 多方面理解,参考来源: <https://www.cnblogs.com/wuguanglin/p/DecoratorPattern.html>
+
+**定义：**动态地给一个对象添加一些额外的职责。就增加功能来说，装饰器模式相比生成子类更为灵活。
+
+**主要解决：**一般的，我们为了扩展一个类经常使用继承方式实现，由于继承为类引入静态特征，并且随着扩展功能的增多，子类会很膨胀。
+
+**何时使用：**在不想增加很多子类的情况下扩展类。
+
+**如何解决：**将具体功能职责划分，同时继承装饰者模式。
+
+**应用实例：** 1、孙悟空有 72 变，当他变成"庙宇"后，他的根本还是一只猴子，但是他又有了庙宇的功能。 2、不论一幅画有没有画框都可以挂在墙上，但是通常都是有画框的，并且实际上是画框被挂在墙上。在挂在墙上之前，画可以被蒙上玻璃，装到框子里；这时画、玻璃和画框形成了一个物体。
+
+**优点：**装饰类和被装饰类可以独立发展，不会相互耦合，装饰模式是继承的一个替代模式，装饰模式可以动态扩展一个实现类的功能。
+
+**缺点：**多层装饰比较复杂。
+
+**使用场景：** 1、扩展一个类的功能。 2、动态增加功能，动态撤销。
+
+**注意事项：**可代替继承。
+
+#### 使用 “func.call” 设定上下文
+
+对于**对象方法的装饰**，需要提供上下文 context
+
+有一个特殊的内置函数方法 func.call(context, …args)，它允许调用一个显式设置 `this` 的函数。
+
+语法如下：
+
+```javascript
+func.call(context, arg1, arg2, ...)
+```
+
+它运行 `func`，提供的第一个参数作为 `this`，后面的作为参数（arguments）。
+
+context的上下文
+
+1. 简单的，将obj对象作为参数，作为`this`
+
+   因为对象里没有定义这个方法。
+
+   例如，在下面的代码中，我们在不同对象的上下文中调用 `sayHi`：`sayHi.call(user)` 运行 `sayHi` 并提供了 `this=user`，然后下一行设置 `this=admin`：
+
+   ```js
+   function sayHi() {
+     alert(this.name);
+   }
+   
+   let user = { name: "John" };
+   let admin = { name: "Admin" };
+   
+   // 使用 call 将不同的对象传递为 "this"
+   sayHi.call( user ); // John
+   sayHi.call( admin ); // Admin
+   ```
+
+2. 复杂一点的，直接将this 作为参数
+
+   因为是调用对象里的方法，this的指向是 `.`点之前的对象名
+
+   在我们的例子中，我们可以在包装器中使用 `call` 将上下文传递给原始函数：
+
+   ```javascript
+   let worker = {
+     someMethod() {
+       return 1;
+     },
+   
+     slow(x) {
+       alert("Called with " + x);
+       return x * this.someMethod(); // (*)
+     }
+   };
+   
+   function cachingDecorator(func) {
+     let cache = new Map();
+     return function(x) {
+       if (cache.has(x)) {
+         return cache.get(x);
+       }
+       let result = func.call(this, x); // 现在 "this" 被正确地传递了
+       cache.set(x, result);
+       return result;
+     };
+   }
+   
+   worker.slow = cachingDecorator(worker.slow); // 现在对其进行缓存
+   
+   alert( worker.slow(2) ); // 工作正常
+   alert( worker.slow(2) ); // 工作正常，没有调用原始函数（使用的缓存）
+   ```
+
+   现在一切都正常工作了。
+
+   为了让大家理解地更清晰一些，让我们更深入地看看 `this` 是如何被传递的：
+
+   1. 在经过装饰之后，`worker.slow` 现在是包装器 `function (x) { ... }`。
+   2. 因此，当 `worker.slow(2)` 执行时，包装器将 `2` 作为参数，并且 `this=worker`（它是点符号 `.` 之前的对象）。
+   3. 在包装器内部，假设结果尚未缓存，`func.call(this, x)` 将当前的 `this`（`=worker`）和当前的参数（`=2`）传递给原始方法。
+
+#### 传递多个参数
+
+使用分布参数 spread语句`...`
+
+当然，我们需要传入的不仅是 `x`，还需要传入 `func.call` 的所有参数。让我们回想一下，在 `function()` 中我们可以得到一个包含所有参数的伪数组（pseudo-array）`arguments`，那么 `func.call(this, x)` 应该被替换为 `func.call(this, ...arguments)`。
+
+这个arguments是可迭代对象, 因为**spread语句**只适用于 **可迭代对象** (Array.from使用于可迭代对象,也适用于类数组)
+
+#### func.apply
+
+我们可以使用 `func.apply(this, arguments)` 代替 `func.call(this, ...arguments)`。
+
+内建方法 func.apply 的语法是：
+
+```javascript
+func.apply(context, args)
+```
+
+它运行 `func` 设置 `this=context`，并使用类数组对象 `args` 作为参数列表（arguments）。
+
+`call` 和 `apply` 之间唯一的语法区别是，`call` 期望一个**参数列表**，而 `apply` 期望一个包含这些参数的类数组对象。
+
+因此，这两个调用几乎是等效的：
+
+```javascript
+func.call(context, ...args); // 使用 spread 语法将数组作为列表传递
+func.apply(context, args);   // 与使用 call 相同
+```
+
+这里只有很小的区别：
+
+- Spread 语法 `...` 允许将 **可迭代对象** `args` 作为列表传递给 `call`。
+- `apply` 仅接受 **类数组对象** `args`。
+
+因此，当我们期望可迭代对象时，使用 `call`，当我们期望类数组对象时，使用 `apply`。
+
+对于**即可迭代又是类数组**的对象，例如一个真正的数组，我们使用 `call` 或 `apply` 均可，但是 `apply` 可能会**更快**，因为大多数 JavaScript 引擎在内部对其进行了优化。
+
+将**所有参数连同上下文**一起传递给另一个函数被称为“**呼叫转移**（call forwarding）”。
+
+这是它的最简形式：
+
+```javascript
+let wrapper = function() {
+  return func.apply(this, arguments);
+};
+```
+
+当外部代码调用这种包装器 `wrapper` 时，它与原始函数 `func` 的调用是无法区分的。
+
+#### 装饰者和函数属性
+
+就是 装饰者 装饰后,就相当于改变了原函数的入口，所以原来的函数属性 就不能用了
+
+存在一种创建装饰者的方法，该装饰者可保留对函数属性的访问权限，但这需要使用特殊的 `Proxy` 对象来包装函数。
+
+#### 总结
+
+**装饰者** 是一个围绕改变函数行为的包装器。主要工作仍由该函数来完成。
+
+装饰者可以被看作是可以添加到函数的 “features” 或 “aspects”。我们可以添加一个或添加多个。而这一切都无需更改其代码！
+
+为了实现 `cachingDecorator`，我们研究了以下方法：
+
+- func.call(context, arg1, arg2…)—— 用给定的上下文和参数调用 `func`。
+- func.apply(context, args) —— 调用 `func` 将 `context` 作为 `this` 和类数组的 `args` 传递给参数列表。
+
+通用的 **呼叫转移（call forwarding）** 通常是使用 `apply` 完成的：
+
+```javascript
+let wrapper = function() {
+  return original.apply(this, arguments);
+};
+```
+
+我们也可以看到一个 **方法借用（method borrowing）** 的例子，就是我们从一个对象中获取一个方法，并在另一个对象的上下文中“调用”它。采用数组方法并将它们应用于参数 `arguments` 是很常见的。另一种方法是使用 Rest 参数对象，该对象是一个真正的数组。
+
+在 JavaScript 领域里有很多装饰者（decorators）
+
+### 6.10 函数绑定
+
+每个函数都有自己的`this` ,如果想让`this` 指向其他对象时,可以进行函数绑定
+
+当将对象方法作为回调进行传递，例如传递给 `setTimeout`，这儿会存在一个常见的问题：“丢失 `this`”。
+
+**回顾:** 一般用`this ` 是要用对象的其他属性.而`this` 是从上下文生成的
+
+当对象方法 在其他地方调用的时候,它的上下文不是 对象 , 方法里用到this的地方就会报错.因为这时候的this是上下文生成的,没有所对应的 属性.这也是叫 **丢失this**
+
+#### 丢失 “this”
+
+我们已经看到了丢失 `this` 的例子。一旦**方法**被传递到与**对象分开**的某个地方 —— `this` 就丢失。
+
+下面是使用 `setTimeout` 时 `this` 是如何丢失的：
+
+```javascript
+let user = {
+  firstName: "John",
+  sayHi() {
+    alert(`Hello, ${this.firstName}!`);
+  }
+};
+
+setTimeout(user.sayHi, 1000); // Hello, undefined!
+```
+
+正如我们所看到的，输出没有像 `this.firstName` 那样显示 “John”，而显示了 `undefined`！
+
+这是因为 `setTimeout` 获取到了函数 `user.sayHi`，但它和对象分离开了。
+
+#### 解决方案 1：包装器
+
+最简单的解决方案是使用一个包装函数：
+
+```javascript
+let user = {
+  firstName: "John",
+  sayHi() {
+    alert(`Hello, ${this.firstName}!`);
+  }
+};
+
+setTimeout(function() {
+  user.sayHi(); // Hello, John!
+}, 1000);
+```
+
+现在它可以正常工作了，因为它从外部词法环境中获取到了 `user`，就可以正常地调用方法了。
+
+**缺点:** 如果在 `setTimeout` 触发之前（有一秒的延迟！）`user` 的值改变了怎么办？那么，突然间，它将调用错误的对象！
+
+#### 解决方案 2：bind
+
+函数提供了一个内建方法 bind，它可以绑定 `this`。
+
+基本的语法是：
+
+```javascript
+// 稍后将会有更复杂的语法
+let boundFunc = func.bind(context);
+```
+
+`func.bind(context)` 的结果是一个特殊的类似于函数的“外来对象（exotic object）”，它可以像函数一样被调用，并且透明地（transparently）将调用传递给 `func` 并设定 `this=context`。
+
+换句话说，`boundFunc` 调用就像绑定了 `this` 的 `func`。
+
+- **函数绑定** 对象
+
+  举个例子，这里的 `funcUser` 将调用传递给了 `func` 同时 `this=user`：
+
+  ```js
+  let user = {
+    firstName: "John"
+  };
+  
+  function func() {
+    alert(this.firstName);
+  }
+  
+  let funcUser = func.bind(user);
+  funcUser(); // John
+  ```
+
+  这里的 `func.bind(user)` 作为 `func` 的“绑定的（bound）变体”，绑定了 `this=user`。
+
+- **对象方法** 绑定对象
+
+  ```javascript
+  let user = {
+    firstName: "John",
+    sayHi() {
+      alert(`Hello, ${this.firstName}!`);
+    }
+  };
+  
+  let sayHi = user.sayHi.bind(user); // (*) 绑定user
+  
+  // 可以在没有对象（译注：与对象分离）的情况下运行它
+  sayHi(); // Hello, John!
+  
+  setTimeout(sayHi, 1000); // Hello, John!
+  
+  // 即使 user 的值在不到 1 秒内发生了改变
+  // sayHi 还是会使用预先绑定（pre-bound）的值
+  user = {
+    sayHi() { alert("Another user in setTimeout!"); }
+  };
+  ```
+
+  在 `(*)` 行，我们取了方法 `user.sayHi` 并将其绑定到 `user`。`sayHi` 是一个“绑定后（bound）”的方法，它可以被单独调用，也可以被传递给 `setTimeout` —— 都没关系，函数上下文都会是正确的。
+
+> 便捷方法：bindAll
+
+如果一个对象有很多方法，并且我们都打算将它们都传递出去，那么我们可以在一个循环中完成所有方法的绑定：
+
+```javascript
+for (let key in user) {
+  if (typeof user[key] == 'function') {
+    user[key] = user[key].bind(user);
+  }
+}
+```
+
+#### 偏函数（Partial functions）
+
+感觉有点像  柯里化?  通过bind  绑定参数,然后再调用函数时,可以只传参剩余的参数
+
+我们不仅可以绑定 `this`，还可以绑定参数（arguments）。虽然很少这么做，但有时它可以派上用场。
+
+`bind` 的完整语法如下：
+
+```javascript
+let bound = func.bind(context, [arg1], [arg2], ...);
+```
+
+它允许将上下文绑定为 `this`，以及绑定函数的起始参数。
+
+例如，我们有一个乘法函数 `mul(a, b)`：
+
+```javascript
+function mul(a, b) {
+  return a * b;
+}
+```
+
+让我们使用 `bind` 在该函数基础上创建一个 `double` 函数：
+
+```javascript
+function mul(a, b) {
+  return a * b;
+}
+
+let double = mul.bind(null, 2);
+
+alert( double(3) ); // = mul(2, 3) = 6
+alert( double(4) ); // = mul(2, 4) = 8
+alert( double(5) ); // = mul(2, 5) = 10
+```
+
+对 `mul.bind(null, 2)` 的调用创建了一个新函数 `double`，它将调用传递到 `mul`，将 `null` 绑定为上下文，并将 `2` 绑定为第一个参数。并且，参数（arguments）均被“原样”传递。
+
+#### 总结
+
+方法 `func.bind(context, ...args)` 返回函数 `func` 的“绑定的（bound）变体”，它绑定了上下文 `this` 和第一个参数（如果给定了）。
+
+通常我们应用 `bind` 来绑定对象方法的 `this`，这样我们就可以把它们传递到其他地方使用。例如，传递给 `setTimeout`。
+
+当我们绑定一个现有的函数的某些参数时，绑定后的（不太通用的）函数被称为 **partially applied** 或 **partial**。
+
+当我们不想一遍又一遍地重复相同的参数时，partial 非常有用。就像我们有一个 `send(from, to)` 函数，并且对于我们的任务来说，`from` 应该总是一样的，那么我们就可以搞一个 partial 并使用它。
+
+### 6.11 深入理解箭头函数
+
+JavaScript 的精髓在于创建一个函数并将其传递到某个地方。
+
+在这样的函数中，我们通常不想离开当前上下文。这就是箭头函数的主战场啦。
+
+#### 箭头函数没有 “this”
+
+箭头函数的`this` 是从从外部获取的,它本身无法通过上下文生成自己的`this`
+
+正如我们在 [对象方法，"this"](https://zh.javascript.info/object-methods) 一章中所学到的，箭头函数没有 `this`。如果访问 `this`，则会从**外部获取**。
+
+例如，我们可以使用它在对象方法内部进行迭代：
+
+```javascript
+let group = {
+  title: "Our Group",
+  students: ["John", "Pete", "Alice"],
+
+  showList() {
+    this.students.forEach(
+      student => alert(this.title + ': ' + student)
+    );
+  }
+};
+
+group.showList();
+```
+
+这里 `forEach` 中使用了箭头函数，所以其中的 `this.title` 其实和外部方法 `showList` 的完全一样。那就是：`group.title`。
+
+如果我们使用正常的函数，则会出现错误：
+
+```javascript
+let group = {
+  title: "Our Group",
+  students: ["John", "Pete", "Alice"],
+
+  showList() {
+    this.students.forEach(function(student) {
+      // Error: Cannot read property 'title' of undefined
+      alert(this.title + ': ' + student)
+    });
+  }
+};
+
+group.showList();
+```
+
+报错是因为 `forEach` 运行它里面的这个函数，但是**这个函数**的 `this` 为默认值 `this=undefined`，因此就出现了尝试访问 `undefined.title` 的情况。
+
+但箭头函数就没事，因为**它们没有** `this`。
+
+> **不能对箭头函数进行** `new` **操作**
+
+不具有 `this` 自然也就意味着另一个限制：箭头函数不能用作构造器（constructor）。不能用 `new` 调用它们。
+
+> **箭头函数 VS bind**
+
+箭头函数 `=>` 和使用 `.bind(this)` 调用的常规函数之间有细微的差别：
+
+- `.bind(this)` 创建了一个该函数的“绑定版本”。
+- 箭头函数 `=>` 没有创建任何绑定。箭头函数只是没有 `this`。`this` 的查找与**常规变量**的**搜索方式**完全相同：在**外部词法环境**中查找。
+
+#### 箭头函数没有 “arguments”
+
+箭头函数也没有 `arguments` 变量.  `arguments`是js中 保存 函数的活动对象 的类数组(也可迭代),
+
+活动对象是指 变量和参数
+
+#### 总结
+
+箭头函数：
+
+- 没有 `this`
+- 没有 `arguments`
+- 不能使用 `new` 进行调用
+- 它们也没有 `super`，但目前我们还没有学到它。我们将在 [类继承](https://zh.javascript.info/class-inheritance) 一章中学习它。
+
+这是因为，箭头函数是针对那些没有自己的“上下文”，但在当前上下文中起作用的短代码的。并且箭头函数确实在这种使用场景中大放异彩。
 
