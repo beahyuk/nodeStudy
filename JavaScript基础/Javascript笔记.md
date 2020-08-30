@@ -4570,7 +4570,1436 @@ group.showList();
 - 没有 `this`
 - 没有 `arguments`
 - 不能使用 `new` 进行调用
-- 它们也没有 `super`，但目前我们还没有学到它。我们将在 [类继承](https://zh.javascript.info/class-inheritance) 一章中学习它。
+- 它们也没有 `super`，但目前我们还没有学到它。我们将在 类继承一章中学习它。
 
 这是因为，箭头函数是针对那些没有自己的“上下文”，但在当前上下文中起作用的短代码的。并且箭头函数确实在这种使用场景中大放异彩。
+
+## 7. 对象属性配置
+
+### 7.1  属性标志和属性描述符
+
+对象可以存储属性。
+
+到目前为止，属性对我们来说只是一个简单的“键值”对。但对象属性实际上是更灵活且更强大的东西。
+
+#### 属性标志
+
+属性除了value，还有其他三个特性：可读性，可迭代性，可配置性
+
+对象属性（properties），除 **`value`** 外，还有三个特殊的**特性**（attributes），也就是所谓的“标志”：
+
+- **`writable`** — 如果为 `true`，则值可以被修改，否则它是只可读的。
+- **`enumerable`** — 如果为 `true`，则会被在循环中列出，否则不会被列出。
+- **`configurable`** — 如果为 `true`，则此特性可以被删除，这些属性也可以被修改，否则不可以。
+
+我们到现在还没看到它们，是因为它们通常不会出现。当我们用**“常用的方式”**创建一个属性时，它们都为 `true`。但我们也可以随时更改它们。
+
+- ` Object.getOwnPropertyDescriptor` 方法允许查询有关属性的 **完整** 信息。查看标志
+
+  语法是：
+
+  ```javascript
+  let descriptor = Object.getOwnPropertyDescriptor(obj, propertyName);
+  ```
+
+  - `obj`
+
+    需要从中获取信息的对象。
+
+  - `propertyName`
+
+    属性的名称。
+
+  返回值是一个所谓的“属性描述符”对象：它包含值和所有的标志。
+
+  例如：
+
+  ```javascript
+  let user = {
+    name: "John"
+  };
+  
+  let descriptor = Object.getOwnPropertyDescriptor(user, 'name');
+  
+  alert( JSON.stringify(descriptor, null, 2 ) );
+  /* 属性描述符：
+  {
+    "value": "John",
+    "writable": true,
+    "enumerable": true,
+    "configurable": true
+  }
+  */
+  ```
+
+- `Object.defineProperty` 修改标志
+
+  语法是：
+
+  ```javascript
+  Object.defineProperty(obj, propertyName, descriptor)
+  ```
+
+  - `obj`，`propertyName`
+
+    要应用描述符的对象及其属性。
+
+  - `descriptor`
+
+    要应用的属性描述符对象。
+
+  如果该属性存在，`defineProperty` 会更新其标志。如果该属性不存在，除了value值，其他三个特性都默认为false。
+
+  例如，这里创建了一个属性 `name`，该属性的所有标志都为 `false`：
+
+  ```javascript
+  let user = {};
+  
+  Object.defineProperty(user, "name", {
+    value: "John"
+  });
+  
+  let descriptor = Object.getOwnPropertyDescriptor(user, 'name');
+  
+  alert( JSON.stringify(descriptor, null, 2 ) );
+  /*
+  {
+    "value": "John",
+    "writable": false,
+    "enumerable": false,
+    "configurable": false
+  }
+   */
+  ```
+
+#### 只读
+
+让我们通过更改 `writable` 标志来把 `user.name` 设置为只读（`user.name` 不能被重新赋值）：
+
+```javascript
+let user = {
+  name: "John"
+};
+
+Object.defineProperty(user, "name", {
+  writable: false
+});
+
+user.name = "Pete"; // Error: Cannot assign to read only property 'name'
+```
+
+现在没有人可以改变我们 `user` 的 `name`，除非它们应用自己的 `defineProperty` 来覆盖我们的 `user` 的 `name`。
+
+#### 不可枚举
+
+可被迭代出来？
+
+现在让我们向 `user` 添加一个自定义的 `toString`。
+
+通常，对象的内置 `toString` 是不可枚举的，它不会显示在 `for..in` 中。但是如果我们添加我们自己的 `toString`，那么默认情况下它将显示在 `for..in` 中，如下所示：
+
+```javascript
+let user = {
+  name: "John",
+  toString() {
+    return this.name;
+  }
+};
+
+// 默认情况下，我们的两个属性都会被列出：
+for (let key in user) alert(key); // name, toString
+```
+
+如果我们不喜欢它，那么我们可以设置 `enumerable:false`。之后它就不会出现在 `for..in` 循环中了，就像内建的 `toString` 一样：
+
+```javascript
+let user = {
+  name: "John",
+  toString() {
+    return this.name;
+  }
+};
+
+Object.defineProperty(user, "toString", {
+  enumerable: false
+});
+
+// 现在我们的 toString 消失了：
+for (let key in user) alert(key); // name
+```
+
+#### 不可配置
+
+不可配置标志（`configurable:false`）有时会预设在内建对象和属性中。
+
+不可配置的属性不能被删除。
+
+使属性变成不可配置是一条单行道。我们无法使用 `defineProperty` 把它改回去。
+
+确切地说，不可配置性对 `defineProperty` 施加了一些限制：
+
+1. 不能修改 `configurable` 标志。
+2. 不能修改 `enumerable` 标志。
+3. 不能将 `writable: false` 修改为 `true`（反之亦然）。
+4. 不能修改访问者属性的 `get/set`（但是如果没有可以分配它们）。
+
+**“Non-configurable” 并不意味着 “non-writable”**
+
+值得注意的例外情况：不可配置但可写的属性的值是可以被更改的。
+
+`configurable: false` 的思想是防止更改属性标志或删除属性标志，而不是更改它的值。
+
+#### Object.defineProperties
+
+有一个方法 Object.defineProperties(obj, descriptors)，允许一次定义多个属性。
+
+语法是：
+
+```javascript
+Object.defineProperties(obj, {
+  prop1: descriptor1,
+  prop2: descriptor2
+  // ...
+});
+```
+
+例如：
+
+```javascript
+Object.defineProperties(user, {
+  name: { value: "John", writable: false },
+  surname: { value: "Smith", writable: false },
+  // ...
+});
+```
+
+所以，我们可以一次性设置多个属性。
+
+#### Object.getOwnPropertyDescriptors
+
+要一次获取所有属性描述符，我们可以使用 Object.getOwnPropertyDescriptors(obj)方法。
+
+它与 `Object.defineProperties` 一起可以用作克隆对象的“标志感知”方式：
+
+```javascript
+let clone = Object.defineProperties({}, Object.getOwnPropertyDescriptors(obj));
+```
+
+### 7.2 属性的getter 和 setter
+
+有两种类型的对象属性。
+
+第一种是 **数据属性**。我们已经知道如何使用它们了。到目前为止，我们使用过的所有属性都是数据属性。
+
+第二种类型的属性是新东西。它是 **访问器属性（accessor properties）**。它们本质上是用于获取和设置值的函数，但从外部代码来看就像常规属性。
+
+#### Getter 和 setter
+
+访问器属性由 “getter” 和 “setter” 方法表示。在对象字面量中，它们用 `get` 和 `set` 表示：
+
+```javascript
+let obj = {
+  get propName() {
+    // 当读取 obj.propName 时，getter 起作用
+  },
+
+  set propName(value) {
+    // 当执行 obj.propName = value 操作时，setter 起作用
+  }
+};
+```
+
+当读取 `obj.propName` 时，getter 起作用，当 `obj.propName` 被赋值时，setter 起作用。
+
+```javascript
+let user = {
+  name: "John",
+  surname: "Smith",
+
+  get fullName() {
+    return `${this.name} ${this.surname}`;
+  },
+
+  set fullName(value) {
+    [this.name, this.surname] = value.split(" ");
+  }
+};
+
+// set fullName 将以给定值执行
+user.fullName = "Alice Cooper";
+
+alert(user.name); // Alice
+alert(user.surname); // Cooper
+```
+
+现在，我们就有一个“虚拟”属性。它是可读且可写的。
+
+从外表看，访问器属性看起来就像一个**普通属性**。这就是访问器属性的设计思想。我们不以函数的方式 **调用**`user.fullName`，我们正常 **读取** 它：getter 在幕后运行
+
+因为访问器属性像是普通的属性，也不是函数，所以在调用的时候，正常读取，但是调用它的getter方法,如果修改了，则调用了它的setter方法。vue的响应式原理就是因为这个
+
+#### 访问器描述符
+
+访问器属性的描述符与数据属性的不同。
+
+对于访问器属性，没有 `value` 和 `writable`，但是有 `get` 和 `set` 函数。
+
+所以访问器描述符可能有：
+
+- **`get`** —— 一个没有参数的函数，在读取属性时工作，
+- **`set`** —— 带有一个参数的函数，当属性被设置时调用，
+- **`enumerable`** —— 与数据属性的相同，
+- **`configurable`** —— 与数据属性的相同。
+
+例如，要使用 `defineProperty` 创建一个 `fullName` 访问器，我们可以使用 `get` 和 `set` 来传递描述符：
+
+```javascript
+let user = {
+  name: "John",
+  surname: "Smith"
+};
+
+Object.defineProperty(user, 'fullName', {
+  get() {
+    return `${this.name} ${this.surname}`;
+  },
+
+  set(value) {
+    [this.name, this.surname] = value.split(" ");
+  }
+});
+
+alert(user.fullName); // John Smith
+
+for(let key in user) alert(key); // name, surname
+```
+
+请注意，一个属性要么是访问器（具有 `get/set` 方法），要么是数据属性（具有 `value`），但不能两者都是。
+
+#### 更聪明的 getter/setter
+
+Getter/setter 可以用作“真实”属性值的包装器，以便对它们进行更多的控制。
+
+例如，如果我们想禁止太短的 `user` 的 name，我们可以创建一个 setter `name`，并将值存储在一个单独的属性 `_name` 中：
+
+```javascript
+let user = {
+  get name() {
+    return this._name;
+  },
+
+  set name(value) {
+    if (value.length < 4) {
+      alert("Name is too short, need at least 4 characters");
+      return;
+    }
+    this._name = value;
+  }
+};
+
+user.name = "Pete";
+alert(user.name); // Pete
+
+user.name = ""; // Name 太短了……
+```
+
+所以，name 被存储在 `_name` 属性中，并通过 getter 和 setter 进行访问。
+
+从技术上讲，外部代码可以使用 `user._name` 直接访问 name。但是，这儿有一个众所周知的约定，即以下划线 `"_"` 开头的属性是内部属性，不应该从对象外部进行访问。
+
+下划线为开头的属性是只能通过对象方法访问该属性，不能从对象外部访问，这是常用的记号
+
+## 8.  原型，继承
+
+### 8.1 原型继承
+
+在编程中，我们经常会想获取并扩展一些东西。
+
+例如，我们有一个 `user` 对象及其属性和方法，并希望将 `admin` 和 `guest` 作为基于 `user` 稍加修改的变体。我们想重用 `user` 中的内容，而不是复制/重新实现它的方法，而只是在其至上构建一个新的对象。
+
+**原型继承（Prototypal inheritance）** 这个语言特性能够帮助我们实现这一需求。
+
+> 原型继承是对象的事
+
+#### [[Prototype]]
+
+在 JavaScript 中，对象有一个特殊的隐藏属性 `[[Prototype]]`（如规范中所命名的），它要么为 `null`，要么就是对另一个对象的引用。该对象被称为“原型”：
+
+原型有点“神奇”。当我们想要从 `object` 中读取一个缺失的属性时，JavaScript 会自动从原型中获取该属性。在编程中，这种行为被称为**“原型继承**”。许多炫酷的语言特性和编程技巧都基于此。
+
+属性 `[[Prototype]]` 是内部的而且是隐藏的，但是这儿有很多设置它的方式。
+
+其中之一就是使用特殊的名字 `__proto__`，就像这样：
+
+```javascript
+let animal = {
+  eats: true
+};
+let rabbit = {
+  jumps: true
+};
+
+rabbit.__proto__ = animal;
+```
+
+如果我们在 `rabbit` 中查找一个缺失的属性，JavaScript 会自动从 `animal` 中获取它。
+
+例如：
+
+```javascript
+let animal = {
+  eats: true
+};
+let rabbit = {
+  jumps: true
+};
+
+rabbit.__proto__ = animal; // (*)
+
+// 现在这两个属性我们都能在 rabbit 中找到：
+alert( rabbit.eats ); // true (**)
+alert( rabbit.jumps ); // true
+```
+
+这里的 `(*)` 行将 `animal` 设置为 `rabbit` 的原型。
+
+当 `alert` 试图读取 `rabbit.eats` `(**)` 时，因为它不存在于 `rabbit` 中，所以 JavaScript 会顺着 `[[Prototype]]` 引用，在 `animal` 中查找（自下而上）：
+
+我们可以说 "`animal` 是 `rabbit` 的原型"，或者说 "`rabbit` 的原型是从 `animal` 继承而来的"。
+
+因此，如果 `animal` 有许多有用的属性和方法，那么它们将自动地变为在 `rabbit` 中可用。这种属性被称为“继承”。
+
+**原型链**
+
+原型链就是一层一层定义`_proto_`
+
+原型链可以很长：
+
+```javascript
+let animal = {
+  eats: true,
+  walk() {
+    alert("Animal walk");
+  }
+};
+
+let rabbit = {
+  jumps: true,
+  __proto__: animal
+};
+
+let longEar = {
+  earLength: 10,
+  __proto__: rabbit
+};
+
+// walk 是通过原型链获得的
+longEar.walk(); // Animal walk
+alert(longEar.jumps); // true（从 rabbit）
+```
+
+这里只有两个限制：
+
+1. 引用不能形成闭环。如果我们试图在一个闭环中分配 `__proto__`，JavaScript 会抛出错误。
+2. `__proto__` 的值可以是对象，也可以是 `null`。而其他的类型都会被忽略。
+
+当然，这可能很显而易见，但是仍然要强调：只能有一个 `[[Prototype]]`。一个对象不能从其他两个对象获得继承。
+
+> 一个对象只能定义一个原型，只能有一个`_proto_` 不能从两个原型中继承
+
+#### 写入不使用原型
+
+原型只能读，不能修改
+
+原型对象的属性分为两种，一种是数据属性，一种是访问器属性。数据的不可以改，访问器可以
+
+- 数据属性
+
+  对于写入/删除操作可以直接在对象上进行。
+
+  在下面的示例中，我们将为 `rabbit` 分配自己的 `walk`：
+
+  ```javascript
+  let animal = {
+    eats: true,
+    walk() {
+      /* rabbit 不会使用此方法 */
+    }
+  };
+  
+  let rabbit = {
+    __proto__: animal
+  };
+  
+  rabbit.walk = function() {
+    alert("Rabbit! Bounce-bounce!");
+  };
+  
+  rabbit.walk(); // Rabbit! Bounce-bounce!
+  ```
+
+  从现在开始，`rabbit.walk()` 将立即在对象中找到该方法并执行，而无需使用原型
+
+- 访问器属性
+
+  访问器（accessor）属性是一个例外，因为分配（assignment）操作是由 setter 函数处理的。因此，写入此类属性实际上与调用函数相同。
+
+  也就是这个原因，所以下面这段代码中的 `admin.fullName` 能够正常运行：
+
+  ```javascript
+  let user = {
+    name: "John",
+    surname: "Smith",
+  
+    set fullName(value) {
+      [this.name, this.surname] = value.split(" ");
+    },
+  
+    get fullName() {
+      return `${this.name} ${this.surname}`;
+    }
+  };
+  
+  let admin = {
+    __proto__: user,
+    isAdmin: true
+  };
+  
+  alert(admin.fullName); // John Smith (*)
+  
+  // setter triggers!
+  admin.fullName = "Alice Cooper"; // (**)
+  ```
+
+  在 `(*)` 行中，属性 `admin.fullName` 在原型 `user` 中有一个 getter，因此它会被调用。在 `(**)` 行中，属性在原型中有一个 setter，因此它会被调用。
+
+#### “this” 的值
+
+在上面的例子中可能会出现一个有趣的问题：在 `set fullName(value)` 中 `this` 的值是什么？属性 `this.name` 和 `this.surname` 被写在哪里：在 `user` 还是 `admin`？
+
+答案很简单：`this` 根本不受原型的影响。
+
+**无论在哪里找到方法：在一个对象还是在原型中。在一个方法调用中，`this` 始终是点符号 `.` 前面的对象。**
+
+因此，setter 调用 `admin.fullName=` 使用 `admin` 作为 `this`，而不是 `user`。
+
+这是一件非常重要的事儿，因为我们可能有一个带有很多方法的大对象，并且还有从其继承的对象。当继承的对象运行继承的方法时，它们将仅修改自己的状态，而不会修改大对象的状态。
+
+例如，这里的 `animal` 代表“方法存储”，`rabbit` 在使用其中的方法。
+
+调用 `rabbit.sleep()` 会在 `rabbit` 对象上设置 `this.isSleeping`：
+
+```javascript
+// animal 有一些方法
+let animal = {
+  walk() {
+    if (!this.isSleeping) {
+      alert(`I walk`);
+    }
+  },
+  sleep() {
+    this.isSleeping = true;
+  }
+};
+
+let rabbit = {
+  name: "White Rabbit",
+  __proto__: animal
+};
+
+// 修改 rabbit.isSleeping
+rabbit.sleep();
+
+alert(rabbit.isSleeping); // true
+alert(animal.isSleeping); // undefined（原型中没有此属性）
+```
+
+结果示意图：
+
+<img src="C:\Users\xq\AppData\Roaming\Typora\typora-user-images\image-20200830102802811.png" alt="image-20200830102802811" style="zoom:50%;" />
+
+> rabbit调用了sleep方法后，sleep里面有this.isSleeping属性，rabbit里没有，它将自己写入这个属性。
+
+如果我们还有从 `animal` 继承的其他对象，像 `bird` 和 `snake` 等，它们也将可以访问 `animal` 的方法。但是，每个方法调用中的 `this` 都是在调用时（点符号前）评估的**对应的对象**，而不是 `animal`。因此，当我们**将数据写入** `this` 时，**会将其存储到这些对象中**。
+
+所以，方法是共享的，但对象状态不是。
+
+#### for…in 循环
+
+当一个对象用for..in 循环出属性名，也会包括继承的原型中的属性
+
+`for..in` 循环也会迭代继承的属性。
+
+例如：
+
+```javascript
+let animal = {
+  eats: true,
+  sleep(){
+    this.isSleeping = true,
+  }
+};
+
+let rabbit = {
+  jumps: true,
+  __proto__: animal
+};
+rabbit.sleep();
+
+// Object.keys 只返回自己的 key
+alert(Object.keys(rabbit)); // jumps isSleeping 
+
+// for..in 会遍历自己以及继承的键
+for(let prop in rabbit) alert(prop); // jumps isSleeping  eats sleep 依次显示
+```
+
+如果这不是我们想要的，并且我们想排除继承的属性，那么这儿有一个内建方法 **obj.hasOwnProperty(key)**：如果 `obj` 具有自己的（非继承的）名为 `key` 的属性，则返回 `true`。
+
+因此，我们可以过滤掉继承的属性（或对它们进行其他操作）：
+
+```javascript
+let animal = {
+  eats: true
+};
+
+let rabbit = {
+  jumps: true,
+  __proto__: animal
+};
+
+for(let prop in rabbit) {
+  let isOwn = rabbit.hasOwnProperty(prop);
+
+  if (isOwn) {
+    alert(`Our: ${prop}`); // Our: jumps
+  } else {
+    alert(`Inherited: ${prop}`); // Inherited: eats
+  }
+}
+```
+
+这里我们有以下继承链：`rabbit` 从 `animal` 中继承，`animal` 从 `Object.prototype` 中继承（因为 `animal` 是对象字面量 `{...}`，所以这是默认的继承），然后再向上是 `null`
+
+<img src="C:\Users\xq\AppData\Roaming\Typora\typora-user-images\image-20200830104541673.png" alt="image-20200830104541673" style="zoom: 50%;" />
+
+注意，这有一件很有趣的事儿。方法 `rabbit.hasOwnProperty` 来自哪儿？我们并没有定义它。从上图中的原型链我们可以看到，该方法是 `Object.prototype.hasOwnProperty` 提供的。换句话说，它是继承的。
+
+……如果 `for..in` 循环会列出继承的属性，那为什么 `hasOwnProperty` 没有像 `eats` 和 `jumps` 那样出现在 `for..in` 循环中？
+
+答案很简单：它是不可枚举的。就像 `Object.prototype` 的其他属性，`hasOwnProperty` 有 `enumerable:false` 标志。并且 `for..in` 只会列出可枚举的属性。这就是为什么它和其余的 `Object.prototype` 属性都未被列出。
+
+**几乎所有其他键/值获取方法都忽略继承的属性**
+
+> 可以在5.9中看到对象获取键/值的方法。与5.8 的map 相似
+
+几乎所有其他键/值获取方法，例如 `Object.keys` 和 `Object.values` 等，都会忽略继承的属性。
+
+它们只会对对象自身进行操作。**不考虑** 继承自原型的属性。
+
+#### 总结
+
+- 在JavaScript中，所有的对象都有一个隐藏的`[[Prototype]]` 属性，它要么是另一个对象，要么就是`null`.
+- 我们可以使用`obj._proto_`访问它，（历史遗留下来的getter/setter，这儿还有其他方法）
+- 通过`[[Prototype]]` 引用的 对象被称为“原型”
+- 如果我们想要读取`obj`的一个属性或者调用一个方法，并且它不存在，那么JavaScript就会尝试在原型中查找它
+- 写/删除操作直接在对象上进行，它们不使用原型（假设它是数据属性，不是setter）
+- 如果我们调用`obj.method()`，而且`method`是从原型中获取的，`this` 仍然会引用`obj`，因此，方法始终与当前对象一起使用，即使方法是继承的
+- `for..in`循环在其自身和继承的属性上进行迭代。所有其他的键/值获取方法仅对对象本身起作用
+
+### 8.2 F.prototype
+
+【 **构造函数的原型对象**
+
+每个对象都有个隐藏的属性[[prototype]]，构造函数是函数 => 函数是对象，所有构造函数也有原型对象，构造函数的prototype属性指向的就是原型对象。原型对象里有个默认的属性`constructor`（构造函数）指向的是构造函数。
+
+当new 一个构造函数后，实例化对象后，就会有`[[prototype]]`属性，这个属性是指向原型对象的】
+
+```js
+alert(obj.__proto__ === Object.prototype); // true，obj 是实例化对象，Object是构造函数
+```
+
+`new F()` 这样的构造函数来创建一个新对象。
+
+如果 `F.prototype` 是一个对象，那么 `new` 操作符会使用它为新对象设置 `[[Prototype]]`。
+
+请注意，这里的 `F.prototype` 指的是 `F` 的一个名为 `"prototype"` 的常规属性。这听起来与“原型”这个术语很类似，但这里我们实际上指的是具有该名字的常规属性。
+
+- F.prototype 和 新对象的[[prototype]]的关系
+
+  下面是一个例子：
+
+```javascript
+let animal = {
+  eats: true
+};
+
+function Rabbit(name) {
+  this.name = name;
+}
+
+Rabbit.prototype = animal;
+
+let rabbit = new Rabbit("White Rabbit"); //  rabbit.__proto__ == animal
+
+alert( rabbit.eats ); // true
+```
+
+​	设置 `Rabbit.prototype = animal` 的字面意思是：“当创建了一个 `new Rabbit` 时，把它的 `[[Prototype]]` 赋值为 `animal`”。
+
+​	这是结果示意图：
+
+<img src="C:\Users\xq\AppData\Roaming\Typora\typora-user-images\image-20200830161911382.png" alt="image-20200830161911382" style="zoom:50%;float:left" />
+
+​	在上图中，`"prototype"` 是一个水平箭头，表示一个常规属性，`[[Prototype]]` 是垂直的，表示 `rabbit` 继承自 `animal`。
+
+**`F.prototype` 仅用在 `new F` 时**
+
+（之前的`_proto_`是普通对象设置原型对象，这个prototype是构造函数指向原型对象的属性）
+
+`F.prototype` 属性仅在 `new F` 被调用时使用，它为新对象的 `[[Prototype]]` 赋值。
+
+如果在创建之后，`F.prototype` 属性有了变化（`F.prototype = `），那么通过 `new F` 创建的新对象也将随之拥有新的对象作为 `[[Prototype]]`，但已经存在的对象将保持旧有的值。
+
+（这段可以参考红宝书的p157 创建新对象后，重写原型对象，导致新对象的原型对象还是指向原来的。）
+
+#### 默认的 F.prototype，构造器属性
+
+每个函数都有 `"prototype"` 属性，即使我们没有提供它。（每个构造函数都有原型对象）
+
+默认的 `"prototype"` 是一个只有属性 `constructor` 的对象，属性 `constructor` 指向函数自身。
+
+像这样：
+
+```javascript
+function Rabbit() {}
+
+/* default prototype
+Rabbit.prototype = { constructor: Rabbit };
+*/
+```
+
+我们可以使用 `constructor` 属性来创建一个新对象，该对象使用与现有对象相同的构造器。
+
+像这样：
+
+```javascript
+function Rabbit(name) {
+  this.name = name;
+  alert(name);
+}
+
+let rabbit = new Rabbit("White Rabbit");
+
+let rabbit2 = new rabbit.constructor("Black Rabbit");//因为新对象的constructor从原型对象获取，而这个属性的value 是构造函数。所以可以这样new 新对象
+```
+
+但是，关于 `"constructor"` 最重要的是……
+
+**……JavaScript 自身并不能确保正确的 `"constructor"` 函数值。**
+
+是的，它存在于函数的默认 `"prototype"` 中，但仅此而已。之后会发生什么 —— 完全取决于我们。
+
+特别是，如果我们将整个默认 prototype 替换掉，那么其中就不会有 `"constructor"` 了。
+
+例如：
+
+```javascript
+function Rabbit() {}
+Rabbit.prototype = { //重写原型对象，导致默认的constructor构造函数属性没有了
+  jumps: true
+};
+
+let rabbit = new Rabbit();
+alert(rabbit.constructor === Rabbit); // false
+```
+
+（为了保证 constructor构造函数的指针存在，在重写原型对象时，加上constructor的属性，或者不重写，直接添加删除）
+
+因此，为了确保正确的 `"constructor"`，我们可以选择添加/删除属性到默认 `"prototype"`，而不是将其整个覆盖：
+
+```javascript
+function Rabbit() {}
+
+// 不要将 Rabbit.prototype 整个覆盖
+// 可以向其中添加内容
+Rabbit.prototype.jumps = true
+// 默认的 Rabbit.prototype.constructor 被保留了下来
+```
+
+或者，也可以手动重新创建 `constructor` 属性：
+
+```javascript
+Rabbit.prototype = {
+  jumps: true,
+  constructor: Rabbit
+};
+
+// 这样的 constructor 也是正确的，因为我们手动添加了它
+```
+
+#### 总结
+
+我们简要介绍了为通过构造函数**创建的对象**设置 `[[Prototype]]` 的方法。稍后我们将看到更多依赖于此的高级编程模式。
+
+一切都很简单，只需要记住几条重点就可以清晰地掌握了：
+
+- `F.prototype` 属性（不要把它与 `[[Prototype]]` 弄混了）在 `new F` 被调用时为**新对象**的 `[[Prototype]]` 赋值。
+- `F.prototype` 的值要么是一个对象，要么就是 `null`：其他值都不起作用。
+- `"prototype"` 属性仅在设置了一个**构造函数**（constructor function），并通过 `new` 调用时，才具有这种特殊的影响。
+
+（只有构造函数的prototype属性才会指向新的对象，这个对象就是原型对象。普通对象的prototype属性就是属性，不是原型对象）
+
+在**常规对象**上，`prototype` 没什么特别的：
+
+```javascript
+let user = {
+  name: "John",
+  prototype: "Bla-bla" // 这里没有魔法了
+};
+```
+
+默认情况下，所有函数都有 `F.prototype = {constructor：F}`，所以我们可以通过访问它的 `"constructor"` 属性来获取一个对象的构造器。
+
+### 8.3 原生的原型
+
+`"prototype"` 属性在 JavaScript 自身的核心部分中被广泛地应用。所有的内置构造函数都用到了它。
+
+首先，我们将看看原生原型的详细信息，然后学习如何使用它为**内建对象**添加新功能。
+
+#### Object.prototype
+
+假如我们输出一个空对象：
+
+```javascript
+let obj = {};
+alert( obj ); // "[object Object]" ?
+```
+
+生成字符串 `"[object Object]"` 的代码在哪里？那就是一个内建的 `toString` 方法，但是它在哪里呢？`obj` 是空的！
+
+……然而简短的表达式 `obj = {}` 和 `obj = new Object()` 是一个意思，其中 `Object` 就是一个内建的对象构造函数，其自身的 `prototype` 指向一个带有 `toString` 和其他方法的一个巨大的对象。
+
+就像这样：
+
+<img src="C:\Users\xq\AppData\Roaming\Typora\typora-user-images\image-20200830163758219.png" alt="image-20200830163758219" style="zoom:50%;float:left" />
+
+当 `new Object()` 被调用（或一个字面量对象 `{...}` 被创建），按照前面章节中我们学习过的规则，这个对象的 `[[Prototype]]` 属性被设置为 `Object.prototype`：
+
+<img src="C:\Users\xq\AppData\Roaming\Typora\typora-user-images\image-20200830163942721.png" alt="image-20200830163942721" style="zoom:50%;float:left" />
+
+所以，之后当 `obj.toString()` 被调用时，这个方法是从 `Object.prototype` 中获取的。
+
+#### 其他内建原型
+
+其他内建对象，像 `Array`、`Date`、`Function` 及其他，都在 prototype 上挂载了方法。
+
+例如，当我们创建一个数组 `[1, 2, 3]`，在内部会默认使用 `new Array()` 构造器。因此 `Array.prototype` 变成了这个数组的 prototype，并为这个数组提供数组的操作方法。这样内存的存储效率是很高的。
+
+按照规范，所有的内建原型顶端都是 `Object.prototype`。这就是为什么有人说“一切都从对象继承而来”。
+
+下面是完整的示意图（3 个内建对象）：
+
+<img src="C:\Users\xq\AppData\Roaming\Typora\typora-user-images\image-20200830164100253.png" alt="image-20200830164100253" style="zoom:50%;" />
+
+#### 基本数据类型
+
+(5.1中基本数据类型数字 字符串那些不是对象，但是在调用它们方法时，会有一个”对象包装器“，使用后即可被销毁)
+
+正如我们记忆中的那样，它们并不是对象。但是如果我们试图访问它们的属性，那么临时包装器对象将会通过内建的构造器 `String`、`Number` 和 `Boolean` 被创建。它们提供给我们操作字符串、数字和布尔值的方法然后消失。
+
+这些对象对我们来说是无形地创建出来的。大多数引擎都会对其进行优化，但是规范中描述的就是通过这种方式。这些对象的方法也驻留在它们的 prototype 中，可以通过 `String.prototype`、`Number.prototype` 和 `Boolean.prototype` 进行获取。
+
+**值 `null` 和 `undefined` 没有对象包装器**
+
+特殊值 `null` 和 `undefined` 比较特殊。它们没有对象包装器，所以它们没有方法和属性。并且它们也没有相应的原型。
+
+#### 更改原生原型
+
+（原生的原型对象可以被修改，但最好不要修改。只有polyfilling可以被修改）
+
+原生的原型是可以被修改的。例如，我们向 `String.prototype` 中添加一个方法，这个方法将对所有的字符串都是可用的：
+
+**重要：**
+
+原型是全局的，所以很容易造成冲突。如果有两个库都添加了 `String.prototype.show` 方法，那么其中的一个方法将被另一个覆盖。
+
+所以，通常来说，修改原生原型被认为是一个很不好的想法。
+
+**在现代编程中，只有一种情况下允许修改原生原型。那就是 polyfilling。**
+
+Polyfilling 是一个术语，表示某个方法在 JavaScript 规范中已存在，但是特定的 JavaScript 引擎尚不支持该方法，那么我们可以通过手动实现它，并用以填充内建原型。
+
+#### 总结
+
+- 所有的内建对象都遵循相同的模式（pattern）：
+  - 方法都存储在 prototype 中（`Array.prototype`、`Object.prototype`、`Date.prototype` 等）。
+  - 对象本身只存储数据（数组元素、对象属性、日期）。
+- 原始数据类型也将方法存储在包装器对象的 prototype 中：`Number.prototype`、`String.prototype` 和 `Boolean.prototype`。只有 `undefined` 和 `null` 没有包装器对象。
+- 内建原型可以被修改或被用新的方法填充。但是不建议更改它们。唯一允许的情况可能是，当我们添加一个还没有被 JavaScript 引擎支持，但已经被加入 JavaScript 规范的新标准时，才可能允许这样做。
+
+### 8.4 原型方法，没有\_proto\_的对象
+
+（`_proto`设置对象的原型对象 是过时的方法，现在用别的方法）
+
+在这部分内容的第一章中，我们提到了设置原型的现代方法。
+
+`__proto__` 被认为是过时且不推荐使用的（deprecated），这里的不推荐使用是指 JavaScript 规范中规定，**proto** 必须仅在浏览器环境下才能得到支持。
+
+现代的方法有：
+
+- Object.create(proto, [descriptors\]) —— 利用给定的 `proto` 作为 `[[Prototype]]` 和可选的属性描述来创建一个空对象。
+- Object.getPrototypeOf(obj) —— 返回对象 `obj` 的 `[[Prototype]]`。
+- Object.setPrototypeOf(obj, proto)—— 将对象 `obj` 的 `[[Prototype]]` 设置为 `proto`。
+
+应该使用这些方法来代替 `__proto__`。
+
+例如：
+
+```javascript
+let animal = {
+  eats: true
+};
+
+// 创建一个以 animal 为原型的新对象
+let rabbit = Object.create(animal); // （普通对象创建原型对象）
+
+alert(rabbit.eats); // true
+
+alert(Object.getPrototypeOf(rabbit) === animal); // true
+
+Object.setPrototypeOf(rabbit, {}); // 将 rabbit 的原型修改为 {}
+```
+
+`Object.create` 有一个可选的第二参数：**属性描述器**。我们可以在此处为新对象提供额外的属性，就像这样：
+
+```javascript
+let animal = {
+  eats: true
+};
+
+let rabbit = Object.create(animal, {
+  jumps: {
+    value: true
+  }
+});
+
+alert(rabbit.jumps); // true
+```
+
+描述器的格式与 属性标志和属性描述符 一章中所讲的一样。
+
+（这个方法的对象克隆，是连原型对象都克隆下来）
+
+我们可以使用 `Object.create` 来实现比复制 `for..in` 循环中的属性更强大的对象克隆方式：
+
+```javascript
+let clone = Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj));
+```
+
+此调用可以对 `obj` 进行真正准确地拷贝，包括所有的属性：可枚举和不可枚举的，数据属性和 setters/getters —— 包括所有内容，并带有正确的 `[[Prototype]]`。
+
+#### 总结
+
+设置和直接访问原型的现代方法有：
+
+- [Object.create(proto, [descriptors\])](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/create) —— 利用给定的 `proto` 作为 `[[Prototype]]`（可以是 `null`）和可选的属性描述来创建一个空对象。
+- [Object.getPrototypeOf(obj)](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf) —— 返回对象 `obj` 的 `[[Prototype]]`（与 `__proto__` 的 getter 相同）。
+- [Object.setPrototypeOf(obj, proto)](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf) —— 将对象 `obj` 的 `[[Prototype]]` 设置为 `proto`（与 `__proto__` 的 setter 相同）。
+
+其他方法：
+
+- [Object.keys(obj)](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/keys) / [Object.values(obj)](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/values) / [Object.entries(obj)](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/entries) —— 返回一个可枚举的由自身的字符串属性名/值/键值对组成的数组。
+- [Object.getOwnPropertySymbols(obj)](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertySymbols) —— 返回一个由自身所有的 symbol 类型的键组成的数组。
+- [Object.getOwnPropertyNames(obj)](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertyNames) —— 返回一个由自身所有的字符串键组成的数组。
+- [Reflect.ownKeys(obj)](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Reflect/ownKeys) —— 返回一个由自身所有键组成的数组。
+- [obj.hasOwnProperty(key)](https://developer.mozilla.org/zh/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty)：如果 `obj` 拥有名为 `key` 的自身的属性（非继承而来的），则返回 `true`。
+
+所有返回对象属性的方法（如 `Object.keys` 及其他）—— 都返回“自身”的属性。如果我们想继承它们，我们可以使用 `for...in`。
+
+# 浏览器：文档，事件，接口
+
+学习如何管理浏览器页面：添加元素，操作元素的大小和位置，动态创建接口并与访问者互动
+
+## 1. Document
+
+### 1.1 浏览器环境，规格
+
+JavaScript 语言最初是为 Web 浏览器创建的。此后，它已经发展成为一种具有多种用途和平台的语言。
+
+平台可以是一个浏览器，一个 Web 服务器，或其他 **主机（host）**，甚至可以是一个“智能”咖啡机，如果它能运行 JavaScript 的话。它们每个都提供了特定于平台的功能。JavaScript 规范将其称为 **主机环境**。
+
+主机环境提供了自己的对象和语言核心以外的函数。Web 浏览器提供了一种控制网页的方法。Node.JS 提供了服务器端功能，等等。
+
+下面是 JavaScript 在浏览器中运行时的鸟瞰示意图：
+
+<img src="C:\Users\xq\AppData\Roaming\Typora\typora-user-images\image-20200830195832087.png" alt="image-20200830195832087" style="zoom:50%;float:left" />
+
+有一个叫做 `window` 的“根”对象。它有两个角色：
+
+1. 首先，它是 JavaScript 代码的全局对象，如 全局对象一章所述。
+2. 其次，它代表“浏览器窗口”，并提供了控制它的方法。
+
+#### 文档对象模型（DOM）
+
+（DOM是对象，对象名是document）
+
+文档对象模型（Document Object Model），简称 DOM，将所有页面内容表示为可以修改的对象。
+
+`document` 对象是页面的主要“入口点”。我们可以使用它来更改或创建页面上的任何内容。
+
+例如：
+
+```javascript
+// 将背景颜色修改为红色
+document.body.style.background = "red";
+
+// 在 1 秒后将其修改回来
+setTimeout(() => document.body.style.background = "", 1000);
+```
+
+在这里，我们使用了 `document.body.style`，但还有很多很多其他的东西。规范中有属性和方法的详细描述：[DOM Living Standard](https://dom.spec.whatwg.org/)。
+
+**DOM 不仅仅用于浏览器**
+
+DOM 规范解释了文档的结构，并提供了操作文档的对象。有的非浏览器设备也使用 DOM。
+
+例如，下载 HTML 文件并对其进行处理的服务器端脚本也可以使用 DOM。但他们可能仅支持部分规范中的内容。
+
+#### 浏览器对象模型（BOM）
+
+（BOM是多个对象，这些对象的作用是处理文档之外的所有内容）
+
+浏览器对象模型（Browser Object Model），简称 BOM，表示由浏览器（主机环境）提供的用于处理文档（document）之外的所有内容的其他对象。
+
+例如：
+
+- [navigator](https://developer.mozilla.org/zh/docs/Web/API/Window/navigator) 对象提供了有关浏览器和操作系统的背景信息。navigator 有许多属性，但是最广为人知的两个属性是：`navigator.userAgent` — 关于当前浏览器，`navigator.platform` — 关于平台（可以帮助区分 Windows/Linux/Mac 等）。
+- [location](https://developer.mozilla.org/zh/docs/Web/API/Window/navigator) 对象允许我们读取当前 URL，并且可以将浏览器重定向到新的 URL。
+
+这是我们可以如何使用 `location` 对象的方法：
+
+```javascript
+alert(location.href); // 显示当前 URL
+if (confirm("Go to Wikipedia?")) {
+  location.href = "https://wikipedia.org"; // 将浏览器重定向到另一个 URL
+}
+```
+
+函数 `alert/confirm/prompt` 也是 BOM 的一部分：它们与文档（document）没有直接关系，但它代表了与用户通信的纯浏览器方法。
+
+#### 总结
+
+说到标准，我们有：
+
+- DOM 规范
+
+  描述文档的结构、操作和事件，详见 [https://dom.spec.whatwg.org](https://dom.spec.whatwg.org/)。
+
+- CSSOM 规范
+
+  描述样式表和样式规则，对它们进行的操作，以及它们与文档的绑定，详见 https://www.w3.org/TR/cssom-1/。
+
+- HTML 规范
+
+  描述 HTML 语言（例如标签）以及 BOM（浏览器对象模型）— 各种浏览器函数：`setTimeout`，`alert`，`location` 等，详见 [https://html.spec.whatwg.org](https://html.spec.whatwg.org/)。它采用了 DOM 规范，并使用了许多其他属性和方法对其进行了扩展。
+
+### 1.2 DOM树
+
+HTML 文档的主干是**标签**（tag）。
+
+根据文档对象模型（DOM），每个 HTML 标签都是一个对象。嵌套的标签是闭合标签的“子标签（children）”。标签内的文本也是一个对象。
+
+所有这些对象都可以通过 JavaScript 来访问，我们可以使用它们来修改页面。
+
+例如，`document.body` 是表示 `body` 标签的对象。
+
+#### DOM 的例子
+
+让我们从下面这个简单的文档（document）开始：
+
+```html
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>About elk</title>
+</head>
+<body>
+  The truth about elk.
+</body>
+</html>
+```
+
+DOM 将 HTML 表示为标签的树形结构。它看起来如下所示：
+
+<svg width="690" height="320"><g transform="translate(20,30)"><path class="link" d="M7,0L7,30L40.333333333333336,30" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><path class="link" d="M7,0L7,180L40.333333333333336,180" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><path class="link" d="M7,0L7,210L40.333333333333336,210" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><path class="link" d="M40.333333333333336,30L40.333333333333336,60L73.66666666666667,60" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><path class="link" d="M40.333333333333336,30L40.333333333333336,90L73.66666666666667,90" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><path class="link" d="M40.333333333333336,30L40.333333333333336,150L73.66666666666667,150" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><path class="link" d="M73.66666666666667,90L73.66666666666667,120L107,120" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><path class="link" d="M40.333333333333336,210L40.333333333333336,240L73.66666666666667,240" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><g class="node" transform="translate(0,0)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(206, 224, 244); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;">▾ </text><text dy="4.5" dx="16.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">HTML</text></g><g class="node" transform="translate(33.33333206176758,30)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(206, 224, 244); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;">▾ </text><text dy="4.5" dx="16.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">HEAD</text></g><g class="node" transform="translate(66.66666412353516,60)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(255, 222, 153); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;"></text><text dy="4.5" dx="5.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">#text ↵␣␣␣␣</text></g><g class="node" transform="translate(66.66666412353516,90)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(206, 224, 244); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;">▾ </text><text dy="4.5" dx="16.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">TITLE</text></g><g class="node" transform="translate(100,120)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(255, 222, 153); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;"></text><text dy="4.5" dx="5.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">#text About elk</text></g><g class="node" transform="translate(66.66666412353516,150)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(255, 222, 153); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;"></text><text dy="4.5" dx="5.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">#text ↵␣␣</text></g><g class="node" transform="translate(33.33333206176758,180)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(255, 222, 153); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;"></text><text dy="4.5" dx="5.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">#text ↵␣␣</text></g><g class="node" transform="translate(33.33333206176758,210)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(206, 224, 244); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;">▾ </text><text dy="4.5" dx="16.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">BODY</text></g><g class="node" transform="translate(66.66666412353516,240)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(255, 222, 153); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;"></text><text dy="4.5" dx="5.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">#text 
+  The truth about elk.</text></g></g></svg>
+
+(文本节点是DOM树的叶子)
+
+每个树的节点都是一个对象。
+
+标签被称为 **元素节点**（或者仅仅是元素），并形成了树状结构：HTML 在根节点 ，head和 body 是其子项，等。
+
+元素内的文本形成 **文本节点**，被标记为 `＃text`。一个文本节点只包含一个字符串。它没有子项，并且总是树的叶子。
+
+例如，`title` 标签里面有文本 `"About elk"`。
+
+请注意文本节点中的特殊字符：
+
+- 换行符：`↵`（在 JavaScript 中为 `\n`）
+- 空格：`␣`
+
+空格和换行符都是完全有效的字符，就像字母和数字。它们形成文本节点并成为 DOM 的一部分。所以，例如，在上面的示例中，`` 标签中的 `` 标签前面包含了一些空格，并且该文本变成了一个 `#text` 节点（它只包含一个换行符和一些空格）。
+
+只有两个顶级排除项：
+
+1. 由于历史原因，head 之前的空格和换行符均被忽略。
+2. 如果我们在 `/body` 之后放置一些东西，那么它会被自动移动到 `body` 内，并处于 `body` 中的最下方，因为 HTML 规范要求所有内容必须位于 `` 内。所以 `` 之后不能有空格。
+
+在其他情况下，一切都很简单 — 如果文档中有空格（就像任何字符一样），那么它们将成为 DOM 中的文本节点，而如果我们删除它们，则不会有任何空格。
+
+#### 自动修正
+
+如果浏览器遇到格式不正确的 HTML，它会在形成 DOM 时自动更正它。
+
+在生成 DOM 时，浏览器会自动处理文档中的错误，关闭标签等。
+
+**表格永远有** \<**tbody**\>
+
+表格是一个有趣的“特殊的例子”。按照 DOM 规范，它们必须具有 ，但 HTML 文本却（官方的）忽略了它。然后浏览器在创建 DOM 时，自动地创建了 。
+
+对于 HTML：
+
+```markup
+<table id="table"><tr><td>1</td></tr></table>
+```
+
+DOM 结构会变成：
+
+<svg width="690" height="360"><g transform="translate(20,30)"><path class="link" d="M7,0L7,30L40.333333333333336,30" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><path class="link" d="M7,0L7,60L40.333333333333336,60" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><path class="link" d="M40.333333333333336,60L40.333333333333336,90L73.66666666666667,90" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><path class="link" d="M40.333333333333336,60L40.333333333333336,150L73.66666666666667,150" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><path class="link" d="M40.333333333333336,60L40.333333333333336,210L73.66666666666667,210" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><path class="link" d="M40.333333333333336,60L40.333333333333336,270L73.66666666666667,270" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><path class="link" d="M73.66666666666667,90L73.66666666666667,120L107,120" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><path class="link" d="M73.66666666666667,150L73.66666666666667,180L107,180" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><path class="link" d="M73.66666666666667,270L73.66666666666667,300L107,300" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><path class="link" d="M73.66666666666667,210L73.66666666666667,240L107,240" style="fill: none; stroke: rgb(190, 195, 199); stroke-width: 1px;"></path><g class="node" transform="translate(0,0)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(206, 224, 244); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;">▾ </text><text dy="4.5" dx="16.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">HTML</text></g><g class="node" transform="translate(33.33333206176758,30)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(206, 224, 244); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;">▾ </text><text dy="4.5" dx="16.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">HEAD</text></g><g class="node" transform="translate(33.33333206176758,60)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(206, 224, 244); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;">▾ </text><text dy="4.5" dx="16.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">BODY</text></g><g class="node" transform="translate(66.66666412353516,90)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(206, 224, 244); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;">▾ </text><text dy="4.5" dx="16.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">P</text></g><g class="node" transform="translate(100,120)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(255, 222, 153); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;"></text><text dy="4.5" dx="5.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">#text Hello</text></g><g class="node" transform="translate(66.66666412353516,150)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(206, 224, 244); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;">▾ </text><text dy="4.5" dx="16.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">LI</text></g><g class="node" transform="translate(100,180)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(255, 222, 153); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;"></text><text dy="4.5" dx="5.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">#text Mom</text></g><g class="node" transform="translate(66.66666412353516,210)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(206, 224, 244); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;">▾ </text><text dy="4.5" dx="16.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">LI</text></g><g class="node" transform="translate(66.66666412353516,270)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(206, 224, 244); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;">▾ </text><text dy="4.5" dx="16.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">LI</text></g><g class="node" transform="translate(100,300)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(255, 222, 153); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;"></text><text dy="4.5" dx="5.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">#text Dad</text></g><g class="node" transform="translate(100,240)" style="opacity: 1;"><rect y="-12.5" x="-5" rx="4" ry="4" height="25" width="250" style="fill: rgb(255, 222, 153); cursor: pointer;"></rect><text dy="4.5" dx="3.5" style="fill: black; pointer-events: none;"></text><text dy="4.5" dx="5.5" style="font: 14px Consolas, &quot;Lucida Console&quot;, Menlo, Monaco, monospace; fill: rgb(51, 51, 51); pointer-events: none;">#text and</text></g></g></svg>
+
+看到了吗？ 出现了。你应该记住这一点，以免在使用表格时，对这种情况感到惊讶。
+
+#### 其他节点类型
+
+除了元素和文本节点外，还有一些其他的节点类型。
+
+新的树节点类型 — *comment node*，被标记为 `#comment`
+
+**HTML 中的所有内容，甚至注释，都会成为 DOM 的一部分。**
+
+一共有 [12 种节点类型](https://dom.spec.whatwg.org/#node)。实际上，我们通常用到的是其中的 4 种：
+
+1. `document` — DOM 的“入口点”。
+2. 元素节点 — HTML 标签，树构建块。
+3. 文本节点 — 包含文本。
+4. 注释 — 有时我们可以将一些信息放入其中，它不会显示，但 JS 可以从 DOM 中读取它。
+
+#### 总结
+
+HTML/XML 文档在浏览器内均被表示为 DOM 树。
+
+- 标签（tag）成为元素节点，并形成文档结构。
+- 文本（text）成为文本节点。
+- ……等，HTML 中的所有东西在 DOM 中都有它的位置，甚至对注释也是如此。
+
+我们可以使用开发者工具来检查（inspect）DOM 并手动修改它。
+
+### 1.3 遍历DOM
+
+DOM 让我们可以对元素和它们中的内容做任何事，但是首先我们需要获取到对应的 DOM 对象。
+
+对 DOM 的所有操作都是以 `document` 对象开始。它是 DOM 的主“入口点”。从它我们可以访问任何节点。
+
+这里是一张描述对象间链接的图片，通过这些链接我们可以在 DOM 节点之间移动。
+
+（这个DOM节点包括文本 节点，注释节点，元素节点等）
+
+<img src="C:\Users\xq\AppData\Roaming\Typora\typora-user-images\image-20200830202914042.png" alt="image-20200830202914042" style="zoom:50%;float:left" />
+
+#### 在最顶层：documentElement 和 body
+
+对于&lt;html&gt; 和&lt;head&gt;\<body\> document有直接的访问的属性
+
+最顶层的树节点可以直接作为`document`的属性来使用：
+
+- `<html>` = `document.documentElement`
+- `<body> ` = `document.body`
+- `<head>` = `document.head`
+
+#### 子节点：childNodes，firstChild，lastChild
+
+- **子节点（或者叫作子）** — 对应的是**直系的子元素**。换句话说，它们被完全嵌套在给定的元素中。例如，`<head>` 和 `<body>` 就是 `<html>` 元素的子元素。
+- **子孙元素** — 嵌套在给定元素中的**所有元素**，包括子元素，以及子元素的子元素等。
+
+**`childNodes` 集合列出了所有子节点，包括文本节点。**
+
+**`firstChild` 和 `lastChild` 属性是访问第一个和最后一个子元素的快捷方式。**
+
+它们只是简写。如果元素存在子节点，那么下面的脚本运行结果将是 true：
+
+```javascript
+elem.childNodes[0] === elem.firstChild
+elem.childNodes[elem.childNodes.length - 1] === elem.lastChild
+```
+
+这里还有一个特别的函数 `elem.hasChildNodes()` 用于检查节点是否有子节点。
+
+**DOM 集合**
+
+正如我们看到的那样，`childNodes` 看起来就像一个数组。但实际上它并不是一个数组，而是一个 **集合** — 一个类数组的可迭代对象。
+
+这个性质会导致两个重要的结果：
+
+1. 我们可以使用 `for..of` 来迭代它：
+
+```javascript
+for (let node of document.body.childNodes) {
+  alert(node); // 显示集合中的所有节点
+}
+```
+
+这是因为集合是可迭代的（提供了所需要的 `Symbol.iterator` 属性）。
+
+2. 无法使用数组的方法，因为它不是一个数组：
+
+```javascript
+alert(document.body.childNodes.filter); // undefined（这里没有 filter 方法！）
+```
+
+**DOM 集合是只读的**
+
+DOM 集合，甚至可以说本章中列出的 **所有** 导航（navigation）属性都是只读的。
+
+我们不能通过类似 `childNodes[i] = ...` 的操作来替换一个子节点。
+
+修改子节点需要使用其它方法。我们将会在下一章中看到它们。
+
+**DOM 集合是实时的**
+
+除小部分例外，几乎所有的 DOM 集合都是 **实时** 的。换句话说，它们反映了 DOM 的当前状态。
+
+如果我们保留一个对 `elem.childNodes` 的引用，然后向 DOM 中添加/移除节点，那么这些节点的更新会自动出现在集合中。
+
+**不要使用 `for..in` 来遍历集合**
+
+可以使用 `for..of` 对集合进行迭代。但有时候人们会尝试使用 `for..in` 来迭代集合。
+
+请不要这么做。`for..in` 循环遍历的是所有可枚举的（enumerable）属性。集合还有一些“额外的”很少被用到的属性，通常这些属性也是我们不期望得到的
+
+#### 兄弟节点和父节点
+
+**兄弟节点（Sibling）** 是指有同一个父节点的节点。
+
+下一个兄弟节点在 `nextSibling` 属性中，上一个是在 `previousSibling` 属性中。
+
+可以通过 `parentNode` 来访问父节点。
+
+例如：
+
+```javascript
+// <body> 的父节点是 <html>
+alert( document.body.parentNode === document.documentElement ); // true
+
+// <head> 的后一个是 <body>
+alert( document.head.nextSibling ); // HTMLBodyElement
+
+// <body> 的前一个是 <head>
+alert( document.body.previousSibling ); // HTMLHeadElement
+```
+
+#### 纯元素导航
+
+(原来的图是所有的节点的DOM，这个是只有元素，不包含文本节点，注释节点等)
+
+但是对于很多任务来说，我们并不想要文本节点或注释节点。我们希望操纵的是代表标签的和形成页面结构的元素节点。
+
+所以，让我们看看更多只考虑 **元素节点** 的导航链接（navigation link）：
+
+<img src="C:\Users\xq\AppData\Roaming\Typora\typora-user-images\image-20200830204108912.png" alt="image-20200830204108912" style="zoom:50%;float:left" />
+
+这些链接和我们在上面提到过的类似，只是在词中间加了 `Element`：
+
+- `children` — 仅那些作为元素节点的子代的节点。
+- `firstElementChild`，`lastElementChild` — 第一个和最后一个子元素。
+- `previousElementSibling`，`nextElementSibling` — 兄弟元素。
+- `parentElement` — 父元素。
+
+**为什么是 `parentElement`? 父节点可以不是一个元素吗？**
+
+`parentElement` 属性返回的是“元素类型”的父节点，而 `parentNode` 返回的是“任何类型”的父节点。这些属性通常来说是一样的：它们都是用于获取父节点。
+
+唯一的例外就是 `document.documentElement`：
+
+```javascript
+alert( document.documentElement.parentNode ); // document
+alert( document.documentElement.parentElement ); // null
+```
+
+#### 总结
+
+给定一个 DOM 节点，我们可以使用导航（navigation）属性访问其直接的邻居。
+
+这些属性主要分为两组：
+
+- 对于所有节点：`parentNode`，`childNodes`，`firstChild`，`lastChild`，`previousSibling`，`nextSibling`。
+- 仅对于元素节点：`parentElement`，`children`，`firstElementChild`，`lastElementChild`，`previousElementSibling`，`nextElementSibling`。
+
+某些类型的 DOM 元素，例如 table，提供了用于访问其内容的其他属性和集合。
+
+### 1.4 搜索：getElement，querySelector
+
+(用来搜索DOM树中的节点，来做一些操作)
+
+#### document.getElementById 或者只使用 id
+
+如果一个元素有 `id` 特性（attribute），那我们就可以使用 `document.getElementById(id)` 方法获取该元素，无论它在哪里。
+
+例如：
+
+```html
+<div id="elem">
+  <div id="elem-content">Element</div>
+</div>
+
+<script>
+  // 获取该元素
+  let elem = document.getElementById('elem');
+
+  // 将该元素背景改为红色
+  elem.style.background = 'red';
+</script>
+```
+
+**请不要使用以 id 命名的全局变量来访问元素**
+
+在本教程中，我们只会在元素来源非常明显时，为了简洁起见，才会使用 `id` 直接引用对应的元素。
+
+在实际开发中，`document.getElementById` 是首选方法。
+
+**`id` 必须是唯一的**
+
+`id` 必须是唯一的。在文档中，只能有一个元素带有给定的 `id`。
+
+如果有多个元素都带有同一个 `id`，那么使用它的方法的行为是不可预测的，例如 `document.getElementById` 可能会随机返回其中一个元素。因此，请遵守规则，保持 `id` 的唯一性。
+
+**只有 `document.getElementById`，没有 `anyElem.getElementById`**
+
+`getElementById` 方法只能被在 `document` 对象上调用。它会在整个文档中查找给定的 `id`。
+
+#### querySelectorAll
+
+（这个是通过选择器来选择节点）
+
+到目前为止，最通用的方法是 `elem.querySelectorAll(css)`，它返回 `elem` 中与给定 CSS 选择器匹配的所有元素。
+
+在这里，我们查找所有为最后一个子元素的 `` 元素：
+
+```HTML
+<ul>
+  <li>The</li>
+  <li>test</li>
+</ul>
+<ul>
+  <li>has</li>
+  <li>passed</li>
+</ul>
+<script>
+  let elements = document.querySelectorAll('ul > li:last-child');
+
+  for (let elem of elements) {
+    alert(elem.innerHTML); // "test", "passed"
+  }
+</script>
+```
+
+这个方法确实功能强大，因为可以使用任何 CSS 选择器。
+
+**也可以使用伪类**
+
+CSS 选择器的伪类，例如 `:hover` 和 `:active` 也都是被支持的。例如，`document.querySelectorAll(':hover')` 将会返回鼠标指针现在已经结束的元素的集合（按嵌套顺序：从最外层 `<html>` 到嵌套最多的元素）。
+
+#### querySelector
+
+`elem.querySelector(css)` 调用会返回给定 CSS 选择器的**第一个元素**。
+
+换句话说，结果与 `elem.querySelectorAll(css)[0]` 相同，但是后者会查找 **所有** 元素，并从中选取一个，而 `elem.querySelector` 只会查找一个。因此它在速度上更快，并且写起来更短。
+
+#### matches
+
+之前的方法是搜索 DOM。
+
+[elem.matches(css)](http://dom.spec.whatwg.org/#dom-element-matches) 不会查找任何内容，它只会检查 `elem` 是否与给定的 CSS 选择器匹配。它返回 `true` 或 `false`。
+
+当我们遍历元素（例如数组或其他内容）并试图过滤那些我们感兴趣的元素时，这个方法会很有用。
+
+#### closest
+
+元素的祖先（ancestor）是：父级，父级的父级，它的父级等。祖先们一起组成了从元素到顶端的父级链。
+
+`elem.closest(css)` 方法会查找与 CSS 选择器匹配的**最近的祖先**。`elem` 自己也会被搜索。
+
+换句话说，方法 `closest` 在元素中得到了提升，并检查每个父级。如果它与选择器匹配，则停止搜索并返回该祖先。
+
+#### getElementsBy*
+
+(这些方法成为历史了，用的更多是选择器查看)
+
+还有其他通过标签，类等查找节点的方法。
+
+如今，它们大多已经成为了历史，因为 `querySelector` 功能更强大，写起来更短。
+
+因此，这里我们介绍它们只是为了完整起见，而你仍然可以在就脚本中找到这些方法。
+
+- `elem.getElementsByTagName(tag)` 查找具有给定标签的元素，并返回它们的集合。`tag` 参数也可以是对于“任何标签”的星号 `"*"`。
+- `elem.getElementsByClassName(className)` 返回具有给定CSS类的元素。
+- `document.getElementsByName(name)` 返回在文档范围内具有给定 `name` 特性的元素。很少使用。
+
+**不要忘记字母 `"s"`！**
+
+新手开发者有时会忘记字符 `"s"`。也就是说，他们会调用 `getElementByTagName` 而不是 `getElement**s**ByTagName`。
+
+`getElementById` 中没有字母 `"s"`，是因为它只返回单个元素。但是 `getElementsByTagName` 返回的是元素的集合，所以里面有 `"s"`。
+
+**它返回的是一个集合，不是一个元素！**
+
+新手的另一个普遍的错误是写：
+
+```javascript
+// 行不通
+document.getElementsByTagName('input').value = 5;
+```
+
+这是行不通的，因为它需要的是一个 input 的 **集合**，并将值赋（assign）给它，而不是赋值给其中的一个元素。
+
+我们应该遍历集合或通过对应的索引来获取元素，然后赋值，如下所示：
+
+```javascript
+// 应该可以运行（如果有 input）
+document.getElementsByTagName('input')[0].value = 5;
+```
+
+#### 总结
+
+有 6 种主要的方法，可以在 DOM 中搜素节点：
+
+| Method                   | Searches by... | Can call on an element? | Live? |
+| ------------------------ | -------------- | ----------------------- | ----- |
+| `querySelector`          | CSS-selector   | ✔                       | -     |
+| `querySelectorAll`       | CSS-selector   | ✔                       | -     |
+| `getElementById`         | `id`           | -                       | -     |
+| `getElementsByName`      | `name`         | -                       | ✔     |
+| `getElementsByTagName`   | tag or `'*'`   | ✔                       | ✔     |
+| `getElementsByClassName` | class          | ✔                       | ✔     |
+
+目前为止，最常用的是 `querySelector` 和 `querySelectorAll`，但是 `getElementBy*` 可能会偶尔有用，或者可以在旧脚本中找到。
+
+此外：
+
+- `elem.matches(css)` 用于检查 `elem` 与给定的 CSS 选择器是否匹配。
+- `elem.closest(css)` 用于查找与给定 CSS 选择器相匹配的最近的祖先。`elem` 本身也会被检查。
+
+让我们在这里提一下另一种用来检查子级与父级之间关系的方法，因为它有时很有用：
+
+- 如果 `elemB` 在 `elemA` 内（`elemA` 的后代）或者 `elemA==elemB`，`elemA.contains(elemB)` 将返回 true。
 
