@@ -1,43 +1,45 @@
 <template>
-  <div >
-    <div class="wrap" v-if = "isOpenModal">
-     <el-button  type="success" round @click="openModal">查看对比图片</el-button>
-    </div>
-    <div v-else>
-     <swiper></swiper>
-     <el-button class="returnBtn" @click="closeModal" type="primary" round >返回按钮</el-button>
-    </div>
+  <div class="container">
+    <!-- <swiper-modalV1></swiper-modalV1> -->
+    <!-- <swiper-modalV2></swiper-modalV2> -->
+    <swiper-test></swiper-test>
   </div>
 </template>
 
 <script>
-  import Swiper from './swiper'
-  export default {
-    data(){
-      return{
-        isOpenModal:true
-      }
+import SwiperModalV1 from "./V1/swiperModal";
+import SwiperModalV2 from "./V2/swiperModal";
+import swiperTest from './swiperTest'
+
+export default {
+  data() {
+    return {
+      isOpenModal: true,
+    };
+  },
+  methods: {
+    openModal() {
+      this.isOpenModal = false;
     },
-    methods:{
-      openModal(){
-        this.isOpenModal = false;
-      },
-      closeModal(){
-        this.isOpenModal = true;
-      }
+    closeModal() {
+      this.isOpenModal = true;
     },
-    components:{
-      Swiper
-    }
-  }
+  },
+  components: {
+    SwiperModalV1,
+    SwiperModalV2,
+    swiperTest
+  },
+};
 </script>
 
 <style scoped>
-.wrap{
-  margin:400px 1000px;
+.container {
+  display: flex;
+  text-align: center;
+  align-items: center;
+  justify-content: space-evenly;
+  height: 500px;
 }
 
-.returnBtn{
-  margin:0 0 0 1000px;
-}
 </style>

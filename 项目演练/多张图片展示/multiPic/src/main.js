@@ -9,10 +9,12 @@ import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/css/swiper.css'
 import 'element-ui/lib/theme-chalk/index.css';
 
+
 Vue.prototype.$axios = axios;
 Vue.prototype.$md5 = md5;
 Vue.use(ElementUI);
-Vue.use(VueAwesomeSwiper)
+Vue.use(VueAwesomeSwiper);
+
 
 Vue.config.productionTip = false
 

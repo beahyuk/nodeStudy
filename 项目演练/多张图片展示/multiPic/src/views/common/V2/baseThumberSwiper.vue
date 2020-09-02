@@ -1,0 +1,195 @@
+<template>
+  <div class="thumb-example">
+      <div class="colorWrap">
+      <span>删除</span> 
+      <span>改动</span> 
+      <span>新增</span> 
+    </div>
+    <!-- swiper1 -->
+    <swiper class="swiper gallery-top" :options="swiperOptionTop" ref="swiperTop">
+      <swiper-slide class="swiperImg" v-for="(item,index) of swiperList" :key="index">
+        <div class="imgBox">
+          <div style="color:white">原稿 - 第{{item.id}}页</div>
+          <img :src="require('../../../'+item.oriImgUrl)" alt="">
+        </div>
+        <div class="imgBox">
+          <div style="color:white">扫描稿 - 第{{item.id}}页</div>
+          <img :src="require('../../../'+item.scanImgUrl)" alt="">
+        </div>
+      </swiper-slide>
+      <div class="swiper-pagination" slot="pagination"></div>	
+      <div class="swiper-button-next swiper-button-white" slot="button-next"></div>
+      <div class="swiper-button-prev swiper-button-white" slot="button-prev"></div>
+    </swiper>
+    <!-- swiper2 Thumbs -->
+    <swiper class="swiper gallery-thumbs" :options="swiperOptionThumbs" ref="swiperThumbs">
+      <swiper-slide  v-for="(item) of swiperList" :key="item.oriImgUrl" >
+         <div class="imgBox1">
+          <img :src="require('../../../'+item.oriImgUrl)" alt="">
+        </div>
+      </swiper-slide>
+    </swiper>
+  </div>
+</template>
+
+<script>
+import { Swiper, SwiperSlide } from "vue-awesome-swiper";
+import "swiper/css/swiper.css";
+export default {
+  components: {
+    Swiper,
+    SwiperSlide,
+  },
+  data() {
+    return {
+      swiperOptionTop: {
+        // loop: true,
+        // loopedSlides: 2, // looped slides should be the same
+        // spaceBetween: 10,
+        mousewheel: true,
+        keyboard : true, 
+         zoom: true,
+        navigation: {
+          nextEl: ".swiper-button-next",
+          prevEl: ".swiper-button-prev",
+        },
+        pagination: {
+          el: ".swiper-pagination",
+          type: 'fraction'
+        },
+      },
+      swiperOptionThumbs: {
+        // loop: true,
+        // loopedSlides: 2, // looped slides should be the same
+        centeredSlides: true,
+        slidesPerView: "auto",
+        touchRatio: 0.2,
+        slideToClickedSlide: true,
+        // mousewheel: true,
+      },
+       oriImgUrl: [
+        "assets/originPDF/L1.jpg",
+        "assets/originPDF/L2.jpg",
+        "assets/originPDF/L3.jpg",
+        "assets/originPDF/L4.jpg",
+        "assets/originPDF/L5.jpg",
+        "assets/originPDF/L6.jpg",
+        "assets/originPDF/L7.jpg",
+      ],
+      scanImgUrl: [
+        "assets/scanPDF/R1.jpg",
+        "assets/scanPDF/R2.jpg",
+        "assets/scanPDF/R3.jpg",
+        "assets/scanPDF/R4.jpg",
+        "assets/scanPDF/R5.jpg",
+        "assets/scanPDF/R6.jpg",
+        "assets/scanPDF/R7.jpg",
+      ],
+      swiperList: [],
+    };
+  },
+  created(){
+    this.getSwiperList();
+  },
+  methods:{
+   getSwiperList() {
+      let oriImgUrl = this.oriImgUrl;
+      let scanImgUrl = this.scanImgUrl;
+      let swiperList = [];
+      let id = 1;
+      for (let i = 0; i < oriImgUrl.length; i++) {
+        swiperList.push({
+          id: id++,
+          oriImgUrl: oriImgUrl[i],
+          scanImgUrl: scanImgUrl[i],
+        });
+      }
+      this.swiperList = swiperList;
+    },
+  },
+  mounted() {
+    this.$nextTick(() => {
+      const swiperTop = this.$refs.swiperTop.$swiper;
+      const swiperThumbs = this.$refs.swiperThumbs.$swiper;
+      swiperTop.controller.control = swiperThumbs;
+      swiperThumbs.controller.control = swiperTop;
+    });
+  },
+};
+</script>
+
+<style scoped>
+.thumb-example {
+  height: 90%;
+}
+.swiper-slide {
+  background-size: cover;
+  background-position: center;
+}
+.swiperImg{
+  display: flex;
+  justify-content: space-evenly;
+}
+.swiper-pagination{
+  color: white;
+}
+.gallery-top {
+  height: 80%;
+  width: 100%;
+}
+.gallery-thumbs {
+  height: 20%;
+  margin-top: 10px;
+}
+.gallery-thumbs .swiper-slide {
+  width: 10%;
+  height: 100%;
+  opacity: 0.4;
+}
+.gallery-thumbs .swiper-slide-active {
+  opacity: 1;
+}
+.gallery-thumbs .swiper-slide-active .imgBox1 img{
+  opacity: 1;
+  border: 2px solid #3d3dfb;
+}
+.imgBox1 {
+  height: 80%;
+}
+.imgBox1 img {
+  height: auto;
+  width: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+.imgBox {
+  height: 100%;
+ /* border: 3px solid #2472c8; */
+}
+.imgBox img {
+  height: auto;
+  width: auto;
+  border: 2px solid white;
+  max-width: 100%;
+  max-height: 100%;
+  margin-top: 10px;
+}
+.colorWrap{
+  display: flex;
+  margin-top: 10px;
+  margin-left: 10px;
+}
+.colorWrap span{
+  padding:0 4px;
+  color: white;
+}
+.colorWrap span:first-child{
+  border-left: 30px solid #ffc0cb;
+}
+.colorWrap span:nth-child(2){
+  border-left: 30px solid #00ff00;
+}
+.colorWrap span:last-child{
+  border-left: 30px solid #ffff00;
+}
+</style>
