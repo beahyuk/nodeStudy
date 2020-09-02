@@ -1,4 +1,4 @@
-# JavaScript 编程语言
+JavaScript 编程语言
 
 ## 1. 简介
 
@@ -5130,7 +5130,7 @@ alert(animal.isSleeping); // undefined（原型中没有此属性）
 
 结果示意图：
 
-<img src="C:\Users\xq\AppData\Roaming\Typora\typora-user-images\image-20200830102802811.png" alt="image-20200830102802811" style="zoom:50%;" />
+![1599006383823](Javascript笔记.assets/1599006383823.png)
 
 > rabbit调用了sleep方法后，sleep里面有this.isSleeping属性，rabbit里没有，它将自己写入这个属性。
 
@@ -5194,7 +5194,7 @@ for(let prop in rabbit) {
 
 这里我们有以下继承链：`rabbit` 从 `animal` 中继承，`animal` 从 `Object.prototype` 中继承（因为 `animal` 是对象字面量 `{...}`，所以这是默认的继承），然后再向上是 `null`
 
-<img src="C:\Users\xq\AppData\Roaming\Typora\typora-user-images\image-20200830104541673.png" alt="image-20200830104541673" style="zoom: 50%;" />
+![1599006408530](Javascript笔记.assets/1599006408530.png)
 
 注意，这有一件很有趣的事儿。方法 `rabbit.hasOwnProperty` 来自哪儿？我们并没有定义它。从上图中的原型链我们可以看到，该方法是 `Object.prototype.hasOwnProperty` 提供的。换句话说，它是继承的。
 
@@ -5262,7 +5262,7 @@ alert( rabbit.eats ); // true
 
 ​	这是结果示意图：
 
-<img src="C:\Users\xq\AppData\Roaming\Typora\typora-user-images\image-20200830161911382.png" alt="image-20200830161911382" style="zoom:50%;float:left" />
+![1599006454458](Javascript笔记.assets/1599006454458.png)
 
 ​	在上图中，`"prototype"` 是一个水平箭头，表示一个常规属性，`[[Prototype]]` 是垂直的，表示 `rabbit` 继承自 `animal`。
 
@@ -5395,11 +5395,11 @@ alert( obj ); // "[object Object]" ?
 
 就像这样：
 
-<img src="C:\Users\xq\AppData\Roaming\Typora\typora-user-images\image-20200830163758219.png" alt="image-20200830163758219" style="zoom:50%;float:left" />
+![1599006487396](Javascript笔记.assets/1599006487396.png)
 
 当 `new Object()` 被调用（或一个字面量对象 `{...}` 被创建），按照前面章节中我们学习过的规则，这个对象的 `[[Prototype]]` 属性被设置为 `Object.prototype`：
 
-<img src="C:\Users\xq\AppData\Roaming\Typora\typora-user-images\image-20200830163942721.png" alt="image-20200830163942721" style="zoom:50%;float:left" />
+![1599006502508](Javascript笔记.assets/1599006502508.png)
 
 所以，之后当 `obj.toString()` 被调用时，这个方法是从 `Object.prototype` 中获取的。
 
@@ -5413,7 +5413,7 @@ alert( obj ); // "[object Object]" ?
 
 下面是完整的示意图（3 个内建对象）：
 
-<img src="C:\Users\xq\AppData\Roaming\Typora\typora-user-images\image-20200830164100253.png" alt="image-20200830164100253" style="zoom:50%;" />
+![1599006517159](Javascript笔记.assets/1599006517159.png)
 
 #### 基本数据类型
 
@@ -5546,7 +5546,7 @@ JavaScript 语言最初是为 Web 浏览器创建的。此后，它已经发展�
 
 下面是 JavaScript 在浏览器中运行时的鸟瞰示意图：
 
-<img src="C:\Users\xq\AppData\Roaming\Typora\typora-user-images\image-20200830195832087.png" alt="image-20200830195832087" style="zoom:50%;float:left" />
+![1599006549956](Javascript笔记.assets/1599006549956.png)
 
 有一个叫做 `window` 的“根”对象。它有两个角色：
 
