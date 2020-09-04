@@ -154,6 +154,20 @@ git branch --set-upstream-to=origin/<branch><本地分支>
 3. 按键盘左上角"Esc"
 4. 输入":wq",注意是冒号+wq,按回车键即可
 
+### 5. 撤销本地commit
+
+参考文章: 
+
+**Git撤销本地commit**
+
+<https://blog.csdn.net/weixin_44722978/article/details/94438640>
+
+```shell
+git reset HEAD~
+```
+
+HEAD表示: 上一次提交
+
 ## svn操作
 
 ### 下载项目到本地
