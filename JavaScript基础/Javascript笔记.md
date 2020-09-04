@@ -6299,6 +6299,555 @@ DOM 节点还具有其他属性，具体有哪些属性则取决于它们的类�
 
 然而，但是 HTML 特性（attribute）和 DOM 属性（property）并不总是相同的
 
+### 1.6 特性和属性（Attributes and properties）
+
+当浏览器加载页面时，它会“读取”（或者称之为：“解析”）HTML 并从中生成 DOM 对象。对于元素节点，大多数标准的 HTML 特性（attributes）会自动变成 DOM 对象的属性（properties）。（译注：attribute 和 property 两词意思相近，为作区分，全文将 attribute 译为“特性”，property 译为“属性”，请读者注意区分。）
+
+例如，如果标签是 `<body id="page">`，那么 DOM 对象就会有 `body.id="page"`。
+
+但特性—属性映射并不是一一对应的！在本章，我们将带领你一起分清楚这两个概念，了解如何使用它们，了解它们何时相同何时不同。
+
+（特性是html中的，属性是dom对象的）
+
+#### DOM 属性
+
+DOM属性可以增删改查
+
+- 增加属性
+
+  - 创建普通属性
+
+    例如，让我们在 `document.body` 中创建一个新的属性：
+
+    ```javascript
+    document.body.myData = {
+      name: 'Caesar',
+      title: 'Imperator'
+    };
+    
+    alert(document.body.myData.title); // Imperator
+    ```
+
+  - 创建方法属性
+
+    我们也可以像下面这样添加一个方法：
+
+    ```javascript
+    document.body.sayTagName = function() {
+      alert(this.tagName);
+    };
+    
+    document.body.sayTagName(); // BODY（这个方法中的 "this" 的值是 document.body）
+    ```
+
+- 修改属性
+
+  我们还可以修改内建属性的原型，例如修改 `Element.prototype` 为所有元素添加一个新方法：
+
+  ```javascript
+  Element.prototype.sayHi = function() {
+    alert(`Hello, I'm ${this.tagName}`);
+  };
+  
+  document.documentElement.sayHi(); // Hello, I'm HTML
+  document.body.sayHi(); // Hello, I'm BODY
+  ```
+
+所以，DOM 属性和方法的行为就像常规的 Javascript 对象一样：
+
+**DOM属性有以下几个特征:**
+
+- 它们可以有很多值。
+- 它们是大小写敏感的（要写成 `elem.nodeType`，而不是 `elem.NoDeTyPe`）。
+
+#### HTML 特性
+
+在 HTML 中，标签可能拥有特性（attributes）。当浏览器解析 HTML 文本，并根据标签创建 DOM 对象时，浏览器会辨别 **标准的** 特性并以此创建 DOM 属性。
+
+所以，当一个元素有 `id` 或其他 **标准的** 特性，那么就会生成对应的 DOM 属性。但是非 **标准的** 特性则不会。
+
+例如
+
+```html
+<body id="test" something="non-standard">
+  <script>
+    alert(document.body.id); // test
+    // 非标准的特性没有获得对应的属性
+    alert(document.body.something); // undefined
+  </script>
+</body>
+```
+
+请注意，一个元素的标准的特性对于另一个元素可能是未知的。例如 `"type"` 是 `<input>` 的一个标准的特性（[HTMLInputElement](https://html.spec.whatwg.org/#htmlinputelement)），但对于 `<body>`（[HTMLBodyElement](https://html.spec.whatwg.org/#htmlbodyelement)）来说则不是。规范中对相应元素类的标准的属性进行了详细的描述。
+
+当然。所有特性都可以通过使用以下方法进行访问：
+
+- `elem.hasAttribute(name)` — 检查特性是否存在。
+- `elem.getAttribute(name)` — 获取这个特性值。
+- `elem.setAttribute(name, value)` — 设置这个特性值。
+- `elem.removeAttribute(name)` — 移除这个特性。
+
+这些方法操作的实际上是 HTML 中的内容。
+
+我们也可以使用 `elem.attributes` 读取所有特性：属于内建 [Attr](https://dom.spec.whatwg.org/#attr) 类的对象的集合，具有 `name` 和 `value` 属性。
+
+**HTML 特性有以下几个特征：**
+
+- 它们的名字是大小写不敏感的（`id` 与 `ID` 相同）。
+- 它们的值总是字符串类型的。
+
+#### 属性—特性同步
+
+当一个标准的特性被改变，对应的属性也会自动更新，（除了几个特例）反之亦然。
+
+在下面这个示例中，`id` 被修改为特性，我们可以看到对应的属性也发生了变化。然后反过来也是同样的效果：
+
+```html
+<input>
+
+<script>
+  let input = document.querySelector('input');
+
+  // 特性 => 属性
+  input.setAttribute('id', 'id');
+  alert(input.id); // id（被更新了）
+
+  // 属性 => 特性
+  input.id = 'newId';
+  alert(input.getAttribute('id')); // newId（被更新了）
+</script>
+```
+
+但这里也有些例外，例如 `input.value` 只能从特性同步到属性，反过来则不行：
+
+```html
+<input>
+
+<script>
+  let input = document.querySelector('input');
+
+  // 特性 => 属性
+  input.setAttribute('value', 'text');
+  alert(input.value); // text
+
+  // 这个操作无效，属性 => 特性
+  input.value = 'newValue';
+  alert(input.getAttribute('value')); // text（没有被更新！）
+</script>
+```
+
+在上面这个例子中：
+
+- 改变特性值 `value` 会更新属性。
+- 但是属性的更改不会影响特性。
+
+这个“功能”在实际中会派上用场，因为用户行为可能会导致 `value` 的更改，然后在这些操作之后，如果我们想从 HTML 中恢复“原始”值，那么该值就在特性中。
+
+#### DOM 属性是多类型的
+
+(DOM属性key不仅仅是字符串,也是可以多类型的)
+
+DOM 属性不总是字符串类型的。例如，`input.checked` 属性（对于 checkbox 的）是布尔型的。
+
+```html
+<input id="input" type="checkbox" checked> checkbox
+
+<script>
+  alert(input.getAttribute('checked')); // 特性值是：空字符串
+  alert(input.checked); // 属性值是：true
+</script>
+```
+
+尽管大多数 DOM 属性都是字符串类型的。
+
+有一种非常少见的情况，即使一个 DOM 属性是字符串类型的，但它可能和 HTML 特性也是不同的。例如，`href`DOM 属性一直是一个 **完整的** URL，即使该特性包含一个相对路径或者包含一个 `#hash`。
+
+这里有一个例子：
+
+```html
+<a id="a" href="#hello">link</a>
+<script>
+  // 特性
+  alert(a.getAttribute('href')); // #hello
+
+  // 属性
+  alert(a.href ); // http://site.com/page#hello 形式的完整 URL
+</script>
+```
+
+如果我们需要 `href` 特性的值，或者其他与 HTML 中所写的完全相同的特性，则可以使用 `getAttribute`。
+
+#### 非标准的特性，dataset
+
+**所有以 “data-” 开头的特性均被保留供程序员使用。它们可在 dataset 属性中使用。**	
+
+例如，如果一个 `elem` 有一个名为 `"data-about"` 的特性，那么可以通过 `elem.dataset.about` 取到它。
+
+像这样：
+
+```html
+<body data-about="Elephants">
+<script>
+  alert(document.body.dataset.about); // Elephants
+</script>
+```
+
+使用 `data-*` 特性是一种合法且安全的传递自定义数据的方式。
+
+请注意，我们不仅可以读取数据，还可以修改数据属性（data-attributes）。然后 CSS 会更新相应的视图：在上面这个例子中的最后一行 `(*)` 将颜色更改为了蓝色。
+
+#### 总结
+
+- 特性（attribute）— 写在 HTML 中的内容。
+- 属性（property）— DOM 对象中的内容。
+
+简略的对比：
+
+|      | 属性                                   | 特性                         |
+| :--- | :------------------------------------- | :--------------------------- |
+| 类型 | 任何值，标准的属性具有规范中描述的类型 | 字符串                       |
+| 名字 | 名字（name）是大小写敏感的             | 名字（name）是大小写不敏感的 |
+
+操作特性的方法：
+
+- `elem.hasAttribute(name)` — 检查是否存在这个特性。
+- `elem.getAttribute(name)` — 获取这个特性值。
+- `elem.setAttribute(name, value)` — 设置这个特性值。
+- `elem.removeAttribute(name)` — 移除这个特性。
+- `elem.attributes` — 所有特性的集合。
+
+在大多数情况下，最好使用 DOM 属性。仅当 DOM 属性无法满足开发需求，并且我们真的需要特性时，才使用特性，例如：
+
+- 我们需要一个非标准的特性。但是如果它以 `data-` 开头，那么我们应该使用 `dataset`。
+- 我们想要读取 HTML 中“所写的”值。对应的 DOM 属性可能不同，例如 `href` 属性一直是一个 **完整的** URL，但是我们想要的是“原始的”值。
+
+### 1.7 修改文档（document）
+
+DOM 修改是创建“实时”页面的关键。
+
+在这里，我们将会看到如何“即时”创建新元素并修改现有页面内容。
+
+#### 创建一个元素
+
+要创建 DOM 节点，这里有两种方法：
+
+- `document.createElement(tag)`
+
+  用给定的标签创建一个新 **元素节点（element node）**：
+
+  ```js
+  let div = document.createElement('div');
+  ```
+
+- `document.createTextNode(text)`
+
+  用给定的文本创建一个 **文本节点**：
+
+  ```js
+  let textNode = document.createTextNode('Here I am');
+  ```
+
+**创建一条消息**
+
+创建信息div元素包含三步:
+
+```javascript
+// 1.创建ｄｉｖ元素
+let div = document.createElement('div');
+
+// 2. 设置它的类名class为alert
+div.className = "alert";
+
+// 3. 填充 内容
+div.innerHTML = "<strong>Hi there!</strong> You've read an important message.";
+```
+
+我们已经创建了该元素。但到目前为止，它还只是在一个名为 `div` 的变量中，尚未在页面中。所以我们无法在页面上看到它。
+
+#### 插入方法
+
+为了让 `div` 显示出来，我们需要将其插入到 `document` 中的某处。
+
+对此有一个特殊的方法 `append`：`document.body.append(div)`。
+
+这是完整代码：
+
+```html
+<style>
+.alert {
+  padding: 15px;
+  border: 1px solid #d6e9c6;
+  border-radius: 4px;
+  color: #3c763d;
+  background-color: #dff0d8;
+}
+</style>
+
+<script>
+  let div = document.createElement('div');
+  div.className = "alert";
+  div.innerHTML = "<strong>Hi there!</strong> You've read an important message.";
+
+  document.body.append(div);
+</script>
+```
+
+插入节点有不同的方法:
+
+- `node.append(...nodes or strings)` — 在 `node` **末尾** 插入节点或字符串，
+- `node.prepend(...nodes or strings)` — 在 `node` **开头** 插入节点或字符串，
+- `node.before(...nodes or strings)` — 在 `node` **前面** 插入节点或字符串，
+- `node.after(...nodes or strings)` — 在 `node` **后面** 插入节点或字符串，
+- `node.replaceWith(...nodes or strings)` — 将 `node` 替换为给定的节点或字符串。
+
+#### insertAdjacentHTML/Text/Element
+
+为此，我们可以使用另一个非常通用的方法：`elem.insertAdjacentHTML(where, html)`。
+
+该方法的第一个参数是代码字（code word），指定相对于 `elem` 的插入位置。必须为以下之一：
+
+- `"beforebegin"` — 将 `html` 插入到 `elem` 前插入，
+- `"afterbegin"` — 将 `html` 插入到 `elem` 开头，
+- `"beforeend"` — 将 `html` 插入到 `elem` 末尾，
+- `"afterend"` — 将 `html` 插入到 `elem` 后。
+
+第二个参数是 HTML 字符串，该字符串会被“作为 HTML” 插入。
+
+例如：
+
+```html
+<div id="div"></div>
+<script>
+  div.insertAdjacentHTML('beforebegin', '<p>Hello</p>');
+  div.insertAdjacentHTML('afterend', '<p>Bye</p>');
+</script>
+```
+
+……将导致：
+
+```HTML
+<p>Hello</p>
+<div id="div"></div>
+<p>Bye</p>
+```
+
+这就是我们可以在页面上附加任意 HTML 的方式。
+
+这是插入变体的示意图：
+
+![1599180208966](Javascript笔记.assets/1599180208966.png)
+
+我们很容易就会注意到这张图片和上一张图片的相似之处。插入点实际上是相同的，但此方法插入的是 HTML。
+
+这个方法有两个兄弟：
+
+- `elem.insertAdjacentText(where, text)` — 语法一样，但是将 `text` 字符串“作为文本”插入而不是作为 HTML，
+- `elem.insertAdjacentElement(where, elem)` — 语法一样，但是插入的是一个元素。
+
+它们的存在主要是为了使语法“统一”。实际上，大多数时候只使用 `insertAdjacentHTML`。因为对于元素和文本，我们有 `append/prepend/before/after` 方法 — 它们也可以用于插入节点/文本片段，但写起来更短。
+
+#### 节点移除
+
+想要移除一个节点，可以使用 `node.remove()`。
+
+让我们的消息在一秒后消失：
+
+```html
+<style>
+.alert {
+  padding: 15px;
+  border: 1px solid #d6e9c6;
+  border-radius: 4px;
+  color: #3c763d;
+  background-color: #dff0d8;
+}
+</style>
+
+<script>
+  let div = document.createElement('div');
+  div.className = "alert";
+  div.innerHTML = "<strong>Hi there!</strong> You've read an important message.";
+
+  document.body.append(div);
+  setTimeout(() => div.remove(), 1000);
+</script>
+```
+
+请注意：如果我们要将一个元素 **移动** 到另一个地方，则无需将其从原来的位置中删除。
+
+**所有插入方法都会自动从旧位置删除该节点。**
+
+请注意：如果我们要将一个元素 **移动** 到另一个地方，则无需将其从原来的位置中删除。
+
+**所有插入方法都会自动从旧位置删除该节点。**
+
+例如，让我们进行元素交换：
+
+```html
+<div id="first">First</div>
+<div id="second">Second</div>
+<script>
+  // 无需调用 remove
+  second.after(first); // 获取 #second，并在其后面插入 #first
+</script>
+```
+
+#### 克隆节点：cloneNode
+
+如何再插入一条类似的消息？
+
+我们可以创建一个函数，并将代码放在其中。但是另一种方法是 **克隆** 现有的 `div`，并修改其中的文本（如果需要）。
+
+当我们有一个很大的元素时，克隆的方式可能更快更简单。
+
+调用 `elem.cloneNode(true)` 来创建元素的一个**“深”克隆** — 具有**所有特性（attribute）和子元素**。如果我们调用 `elem.cloneNode(false)`，那克隆就不包括子元素。
+
+一个拷贝消息的示例：
+
+```html
+<style>
+.alert {
+  padding: 15px;
+  border: 1px solid #d6e9c6;
+  border-radius: 4px;
+  color: #3c763d;
+  background-color: #dff0d8;
+}
+</style>
+
+<div class="alert" id="div">
+  <strong>Hi there!</strong> You've read an important message.
+</div>
+
+<script>
+  let div2 = div.cloneNode(true); // 克隆消息
+  div2.querySelector('strong').innerHTML = 'Bye there!'; // 修改克隆
+
+  div.after(div2); // 在已有的 div 后显示克隆
+</script>
+**Hi there!** You've read an important message.
+
+**Bye there!** You've read an important message.
+```
+
+#### DocumentFragment
+
+`DocumentFragment` 是一个特殊的 DOM 节点，用作来传递节点列表的包装器（wrapper）。
+
+我们可以向其附加其他节点，但是当我们将其插入某个位置时，则会插入其内容。
+
+我们之所以提到 `DocumentFragment`，主要是因为它上面有一些概念，例如 [template](https://zh.javascript.info/template-element) 元素，我们将在以后讨论。
+
+#### 聊一聊 “document.write”
+
+还有一个非常古老的向网页添加内容的方法：`document.write`。
+
+语法如下：
+
+```html
+<p>Somewhere in the page...</p>
+<script>
+  document.write('<b>Hello from JS</b>');
+</script>
+<p>The end</p>
+Somewhere in the page...
+
+Hello from JS
+The end
+```
+
+调用 `document.write(html)` 意味着将 `html` “就地马上”写入页面。`html` 字符串可以是动态生成的，所以它很灵活。我们可以使用 JavaScript 创建一个完整的页面并对其进行写入。
+
+这个方法来自于没有 DOM，没有标准的上古时期……。但这个方法依被保留了下来，因为还有脚本在使用它。
+
+由于以下重要的限制，在现代脚本中我们很少看到它：
+
+**document.write 调用只在页面加载时工作。**而且是原地写入页面,注意script标签的顺序
+
+如果我们稍后调用它，则现有文档内容将被擦除。
+
+例如：
+
+```html
+<p>After one second the contents of this page will be replaced...</p>
+<script>
+  // 1 秒后调用 document.write
+  // 这时页面已经加载完成，所以它会擦除现有内容
+  setTimeout(() => document.write('<b>...By this.</b>'), 1000);
+</script>
+After one second the contents of this page will be replaced... //先显示这个
+...By this. // 过段时间就会删掉之前内容,显示这个
+```
+
+因此，在某种程度上讲，它在“加载完成”阶段是不可用的，这与我们上面介绍的其他 DOM 方法不同。
+
+这是它的缺陷。
+
+还有一个好处。从技术上讲，当在浏览器正在读取（“解析”）传入的 HTML 时调用 `document.write` 方法来写入一些东西，浏览器会像它本来就在 HTML 文本中那样使用它。
+
+所以它运行起来出奇的快，因为它 **不涉及 DOM 修改**。它直接写入到页面文本中，而此时 DOM 尚未构建。
+
+因此，如果我们需要向 HTML 动态地添加大量文本，并且我们正处于页面加载阶段，并且速度很重要，那么它可能会有帮助。但实际上，这些要求很少同时出现。我们可以在脚本中看到此方法，通常是因为这些脚本很旧
+
+#### 总结
+
+- 创建新节点的方法：
+
+  - `document.createElement(tag)` — 用给定的标签创建一个元素节点，
+  - `document.createTextNode(value)` — 创建一个文本节点（很少使用），
+  - `elem.cloneNode(deep)` — 克隆元素，如果 `deep==true` 则与其后代一起克隆。
+
+- 插入和移除节点的方法：
+
+  - `node.append(...nodes or strings)` — 在 `node` 末尾插入，
+  - `node.prepend(...nodes or strings)` — 在 `node` 开头插入，
+  - `node.before(...nodes or strings)` — 在 `node` 之前插入，
+  - `node.after(...nodes or strings)` — 在 `node` 之后插入，
+  - `node.replaceWith(...nodes or strings)` — 替换 `node`。
+  - `node.remove()` — 移除 `node`。
+
+  文本字符串被“作为文本”插入。
+
+- 这里还有“旧式”的方法：
+
+  - `parent.appendChild(node)`
+  - `parent.insertBefore(node, nextSibling)`
+  - `parent.removeChild(node)`
+  - `parent.replaceChild(newElem, node)`
+
+  这些方法都返回 `node`。
+
+- 在 `html` 中给定一些 HTML，`elem.insertAdjacentHTML(where, html)` 会根据 `where` 的值来插入它：
+
+  - `"beforebegin"` — 将 `html` 插入到 `elem` 前面，
+  - `"afterbegin"` — 将 `html` 插入到 `elem` 的开头，
+  - `"beforeend"` — 将 `html` 插入到 `elem` 的末尾，
+  - `"afterend"` — 将 `html` 插入到 `elem` 后面。
+
+另外，还有类似的方法，`elem.insertAdjacentText` 和 `elem.insertAdjacentElement`，它们会插入文本字符串和元素，但很少使用。
+
+- 要在页面加载完成之前将 HTML 附加到页面：
+
+  - `document.write(html)`
+
+  页面加载完成后，这样的调用将会擦除文档。多见于旧脚本。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # js补充
 
 ## 闭包
