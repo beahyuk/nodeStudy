@@ -186,3 +186,16 @@ HEAD表示: 上一次提交
 
 [算法题目+解析](<https://www.cnblogs.com/wuguanglin/p/2dArrayFind.html>)
 
+## vue组件
+
+- 构建大屏（**全屏**）数据展示页面即**数据可视化**
+
+   <http://datav.jiaminghi.com/guide/>
+
+## 项目演练
+
+- 后台管理
+
+  <https://github.com/PanJiaChen/vue-element-admin>
+
+  
