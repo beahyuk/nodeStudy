@@ -1,24 +1,15 @@
 import Vue from 'vue'
-import App from './App'
+import App from './App.vue'
 import router from './router'
-import ElementUI from 'element-ui';
-import axios from 'axios';
-import store from './vuex/store';
-import md5 from 'js-md5';
-import 'element-ui/lib/theme-chalk/index.css';
+import store from './store'
+import dataV from '@jiaminghi/data-view'
 
-Vue.prototype.$axios = axios;
-Vue.prototype.$md5 = md5;
-Vue.use(ElementUI)
+Vue.use(dataV)
 
 Vue.config.productionTip = false
 
 new Vue({
-  el: '#app',
-  router,
-  store,
-  components: {
-    App
-  },
-  template: '<App/>'
-})
+    router,
+    store,
+    render: h => h(App)
+}).$mount('#app')

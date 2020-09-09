@@ -4,14 +4,7 @@
   </div>
 </template>
 
-<script>
-export default {
-    name: "App"
-};
-</script>
-
-<style> 
-html,
+<style lang="scss">
 body {
     width: 100%;
     height: 100%;
