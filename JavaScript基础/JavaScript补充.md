@@ -489,4 +489,142 @@ JavaScript 引擎创建了执行栈来管理执行上下文，可以把执行栈
 - 游览器js总是访问执行栈顶层的执行上下文。
 - 全局上下文只有唯一的一个，它在浏览器关闭时出栈
 
- 
+## 防抖和节流
+
+**防抖**和**节流**的作用都是防止函数多次调用。区别在于，假设一个用户一直触发这个函数，且每次触发函数的间隔小于wait，防抖的情况下只会调用一次，而节流的 情况会每隔一定时间（参数）调用函数。
+
+### 参考文章:
+
+-  03-什么是防抖和节流？有什么区别？如何实现？(说明了两者区别)
+
+  <https://blog.csdn.net/qq_40028324/article/details/90166446>
+
+- 函数防抖和节流(代码+实例清楚)
+
+  <https://www.jianshu.com/p/c8b86b09daf0>
+
+### 防抖
+**所谓防抖，就是指触发事件后在 n 秒内函数只能执行一次，如果在 n 秒内又触发了事件，则会重新计算函数执行时间。**
+
+普通的防抖函数(不立刻执行)
+
+```js
+// 防抖
+function debounce(fn,delay){
+  let timer = null;
+  return function(){
+    let context = this;
+    let arg = arguments;
+    if(timer) clearTimeout(timer);
+    timer = setTimeout(()=>{
+      fn.apply(context,arg);
+    },delay)
+  }
+}
+function fn(){
+  console.log("防抖");
+}
+addEventListener("scroll",debounce(fn,100));// 滚动事件
+```
+
+上述防抖函数的代码还需要注意的是 this 和 参数的传递
+
+```jsx
+let context = this;
+let args = arguments;
+```
+
+防抖函数的代码使用这两行代码来获取 this 和 参数，是为了让 debounce 函数最终返回的函数 this 指向不变以及依旧能接受到 e 参数。
+
+防抖函数 还有立刻执行 的方法,就是触发事件后函数会立刻执行,然后n秒内不触发事件才能继续执行函数的效果
+
+```js
+// 防抖 立即执行
+function debounce(fn,delay){
+  let timer = null;
+  return function(){
+    let context = this;
+    let arg = arguments;
+
+    if(timer) clearTimeout(timer);
+
+    let callNow = !timer;
+    timer = setTimeout(()=>{
+      timer = null;
+    },delay)
+
+    if(callNow) fn.apply(context,arg);
+  }
+}
+function fn(){
+  console.log("防抖立刻执行版");
+}
+addEventListener("scroll",debounce(fn,1000))
+```
+
+防抖 立即和非立即合并
+
+```jsx
+/**
+ * @desc 函数防抖
+ * @param func 函数
+ * @param wait 延迟执行毫秒数
+ * @param immediate true 表立即执行，false 表非立即执行
+ */
+function debounce(func,wait,immediate) {
+    let timeout;
+
+    return function () {
+        let context = this;
+        let args = arguments;
+
+        if (timeout) clearTimeout(timeout);
+        if (immediate) {
+            var callNow = !timeout;
+            timeout = setTimeout(() => {
+                timeout = null;
+            }, wait)
+            if (callNow) func.apply(context, args)
+        }
+        else {
+            timeout = setTimeout(function(){
+                func.apply(context, args)
+            }, wait);
+        }
+    }
+}
+```
+
+### 节流
+
+**所谓节流，就是指连续触发事件但是在 n 秒中只执行一次函数。**节流会稀释函数的执行频率
+
+```js
+// 节流
+function throttle(fn,delay){
+  let prev = Date.now();
+  return function(){
+    let context = this;
+    let arg = arguments;
+    let now = Date.now();
+    if(now-prev >= delay){
+      fn.apply(context,arg);
+      prev = Date.now();
+    }
+  }
+}
+function fn(){
+  console.log("节流");
+}
+addEventListener("scroll",throttle(fn,100));
+```
+
+### 防抖和节流区别
+
+防抖动和节流本质是不一样的。
+
+- 防抖动是将多次执行变为最后一次执行，
+- 节流是将多次执行变成每隔一段时间执行。
+
+防抖是控制次数,节流是控制频率
+

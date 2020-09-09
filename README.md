@@ -198,4 +198,7 @@ HEAD表示: 上一次提交
 
   <https://github.com/PanJiaChen/vue-element-admin>
 
-  
+- 学习CSDN博主(包含很多前端的帖子,值得看)
+
+  <https://blog.csdn.net/qq_40028324>
+
