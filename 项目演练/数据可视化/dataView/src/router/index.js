@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
-import Draw from '../views/draw/DrawMap.vue'
+import Draw from '../views/draw/test.vue'
 
 Vue.use(VueRouter)
 

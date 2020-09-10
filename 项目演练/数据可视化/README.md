@@ -20,6 +20,16 @@
 
   <https://antv.vision/zh>
 
+## 问题
+
+- canvas为什么设置宽高后，还要内联设置宽度和高度
+
+  - -- 已解决，因为外面的宽高相当于一块画布，你对这个画布大小不满意，可以用内联样式进行缩放
+
+  - 参考文章：
+
+    Canvas设置width和height问题：<https://www.cnblogs.com/liuyuemozhu/p/7486361.html>
+
 ## 思路
 
 ### 背景图
@@ -96,6 +106,12 @@
 
    绘制填充矩形的方法。矩形的起点在 *(x, y)* 位置，矩形的尺寸是 *width* 和 *height* ，`fillStyle` 属性决定矩形的样式。
 
+- 可以在菜鸟教程在线编辑,查看画图效果. 注意canvas的命名,菜鸟是c= document.getElementById('canvas');
+
+  地址: <https://www.runoob.com/try/try.php?filename=tryhtml5_canvas_first>
+
+  总之每次想画新的图后 都要设定自己想要的fillstyle画笔颜色,然后fillRect填充画框.看到不知道的API就去官网MDN找
+
 - 36-48行画图运行效果
 
   ![1599639172875](README.assets/1599639172875.png)
@@ -107,12 +123,6 @@
 - 60-65 添加文字和边框效果
 
   ![1599639699360](README.assets/1599639699360.png)
-
-- 可以在菜鸟教程在线编辑,查看画图效果. 注意canvas的命名,菜鸟是c= document.getElementById('canvas');
-
-  地址: <https://www.runoob.com/try/try.php?filename=tryhtml5_canvas_first>
-
-  总之每次想画新的图后 都要设定自己想要的fillstyle画笔颜色,然后fillRect填充画框.看到不知道的API就去官网MDN找
 
 ```js
 function drawmap1() {
@@ -221,3 +231,18 @@ function drawmap1() {
 
   <https://blog.csdn.net/qq_39178993/article/details/81700001>
 
+- canvas轨迹运动, 利用向量实现点匀速运动(人员运动轨迹)
+
+  <https://blog.csdn.net/qq_38145702/article/details/91043520>
+
+- canvas-绘制轨迹(简单的运动轨迹,不是动态完成的)
+
+  <https://blog.csdn.net/xiaoyuyully/article/details/81346537>
+
+### 进度条
+
+参考文章
+
+- js setTimeout和for循环搭配使用时变量的问题
+
+  <https://blog.csdn.net/i_recluse/article/details/80632321>

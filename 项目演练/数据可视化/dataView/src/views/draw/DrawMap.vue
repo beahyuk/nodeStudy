@@ -1,6 +1,8 @@
 <template>
   <div>
-    <canvas id="canvas" width="1800" height="960" style="border: 3px solid rgb(170, 170, 170);width:900px;height:480px"></canvas>
+    <canvas id="canvas" width="1800" height="960"
+           style="border: 3px solid rgb(170, 170, 170);width:900px;height:480px">
+    </canvas>
     <!-- <canvas id="canvas2" width="1800" height="960" style="border: 3px solid rgb(170, 170, 170);width:900px;height:480px"></canvas> -->
   </div>
 </template>
