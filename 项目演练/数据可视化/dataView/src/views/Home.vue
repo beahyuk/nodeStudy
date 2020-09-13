@@ -1,43 +1,32 @@
 <template>
   <dv-full-screen-container > 
-    <dv-border-box-1>
-        <dv-loading>Loading...</dv-loading>
-      </dv-border-box-1>
-      <!-- <dv-charts :option="option" /> -->
+    <div class="main-header">大数据分析</div>
+    <dv-border-box-1 class="main-container">
+      <!-- <div class="left-main-container">
+          <process></process>
+      </div> -->
+      <div class="center-main-container">
+        <!-- <polar-chart></polar-chart> -->
+      </div>
+      
+    </dv-border-box-1>
+   
   </dv-full-screen-container>
 </template>
 
 <script>
+import Process from './process/process'
+import PolarChart from './gannt/gannt'
 export default {
+  components:{
+    Process,
+    PolarChart
+  },
   data(){
     return{
-      option:{
-           title: {
-    text: '剩余油量表',
-    style: {
-      fill: '#fff'
-    }
-  },
-  series: [
-    {
-      type: 'gauge',
-      data: [ { name: 'itemA', value: 55 } ],
-      center: ['50%', '55%'],
-      axisLabel: {
-        formatter: '{value}%',
-        style: {
-          fill: '#fff'
-        }
-      },
-      axisTick: {
-        style: {
-          stroke: '#fff'
-        }
-      },
-      animationCurve: 'easeInOutBack'
-    }
-  ]
-      }
+      config:{
+        value: 66
+      } 
     }
   }
  
@@ -47,5 +36,11 @@ export default {
 <style>
 body{
   margin: 0px;
+}
+.left-main-container{
+  width: 78%;
+  /* height: 50%; */
+  padding-left: 20px;
+  box-sizing: border-box;
 }
 </style>
