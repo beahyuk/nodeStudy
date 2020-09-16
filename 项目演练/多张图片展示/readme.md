@@ -66,24 +66,24 @@ swiper的api官方说明:<https://www.swiper.com.cn/api/index.html> 可以搜索
 
 ![1598511149916](readme.assets/1598511149916.png)
 
-- modal组件无法像图片一样放大,宽度100%,无法透明
-  - --已解决,放弃了透明,该做成 像原来的软件一样
-  - 用第二种方式做
+- element UI 的dialog组件无法像图片一样放大,宽度100%,无法透明
+  - --已解决,放弃了透明,
+  - 改做成 像原来的软件一样.像ppt形式.左边缩略图,右边图片对比结果
   
 - modal组件和swiper组件结合后，缩略图和图片无法联动
-  - --已解决,将swiper单独抽出来,做baseSwiper
-  - 因为nextClick 是在mouted的时候定义的,而这个混合组件刚开始的时候,swiper还没有DOM,只有点击modal后才会有dom生成
+  - --已解决,将swiper单独抽出来,做baseSwiper,和点击按钮界面分开
+  - 因为nextClick 是在mouted的时候定义的,如果不抽出当swiper单独组件,生成这个混合组件,那么刚开始的时候,swiper还没有DOM,所以mouted方法里的nextclick无法生效,只有点击modal后swiper的dom生成,所以需要单独抽出swiper组件
   
 - 轮播图 无法放大
 
   - --已解决, 原来是两个div imgbox存放图片,改成一个div存放两张图片,就可以进行放大缩小
-  - 吐槽:一开始的zoom 放大无法拖拽,而且比例过大,中心放大, 所以就打算找鼠标事件,双击局部放大图片,看了各种的文章后,建了各种test.vue后,偶然回头看了下swiper官方的API zoom,结果官方的是可以 双击局部放大,并且拖拽的.我就在想为什么自己的不行,在原来的组件上试了下,还是无法完成效果,于是就从官方vue-awesome-swiper官方示例中找到可以zoom的组件,拉到本地跑了一下,我这两天好像傻子哦.但是也稍微学习了下鼠标事件.
+  - 吐槽:一开始的zoom 放大无法拖拽,而且比例过大,中心放大, 所以就打算找鼠标事件,双击局部放大图片,看了各种的文章后,建了各种test.vue后,试了各种鼠标事件,专研各种视图窗口大小,偶然回头看了下swiper官方的API zoom,结果官方的是可以 双击局部放大,并且拖拽的.我就在想为什么自己的不行,在原来的组件上试了下,还是无法完成效果,于是就从官方vue-awesome-swiper官方示例中找到可以zoom的组件,拉到本地跑了一下,能实现放大拖动效果,又尝试的在一个div里,放了两张图片,也可以实现目标效果.我这两天好像傻子哦.但是也稍微学习了下鼠标事件.
 
 - 遮罩图 无法按Esc 退出 遮罩
 
   - -- 已解决,参照文章:<https://www.cnblogs.com/bbplayer/p/11933336.html>
 
-  - 在mouted方法中,添加nextClick时间
+  - 在mouted方法中,添加nextClick 键盘监听事件
 
     ```js
     mounted(){
@@ -97,6 +97,14 @@ swiper的api官方说明:<https://www.swiper.com.cn/api/index.html> 可以搜索
       })
     },
     ```
+
+- element UI的dialog 弹窗的高度限制?
+  - --未解决,
+  - 固定了dialog弹窗的高度,swiper组件高度用百分比的话,就会全部展示出来,只能用具体的px给swiper组件高度
+- PPT式图书对比 双击后,无法拖动,也无法指定的位置双击放大,只能中心放大
+  - --未解决
+  - 可能是图片的高度被定死了,没有用百分比,所以无法拖动
+  - 遮罩弹窗就可以实现双击放大,能拖动
 
 ## 鼠标
 
@@ -122,7 +130,7 @@ vue中的鼠标事件,
 
 
 
-## 参考文章
+## 鼠标事件参考文章
 
 1. js实现图片在一个div中点击按钮放大缩小效果:
 
@@ -145,3 +153,14 @@ vue中的鼠标事件,
 5. 基于vue实现图片的放大，缩小，旋转，拖拽功能(图片，按钮放大缩小，可以拖拽)
 
    <https://blog.csdn.net/qq1246877006/article/details/103485439>
+
+# 工具网址收藏
+
+- **scss转css**:
+
+   <https://www.sassmeister.com/>
+
+- **pdf文件转png**:
+
+  <https://xxlllq.github.io/pdf2img/>
+
