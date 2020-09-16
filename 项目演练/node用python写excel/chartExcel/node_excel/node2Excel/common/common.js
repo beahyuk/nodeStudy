@@ -8,15 +8,17 @@ PythonShell.defaultOptions={
   scriptPath:pythonFolder
 }
 let data = {
+  "fileName":"common_chart",
   "headings":["Number","Batch1","Batch2"],
   "type":'bar',
   "title":'results of sample analysis',
-  "X_axis_name":"test number",
-  "Y_axis_name":"Sample length(mm)",
-  "categories":[1, 2, 3, 4, 5],
+  "XAxisNname":"test number",
+  "YAxisNname":"Sample length(mm)",
+  "categories":["苹果", "pear", "banana", "peach", "mango"],
   "value1":[2, 4, 6, 8, 10],
   "value2": [3, 6, 9, 12, 15],
-  "pos":['A1','A16']
+  "chartPos": {'column':'A','row':1},
+  "columnPos":["A","B","C","D",]
   
 };
 let jsonData = JSON.stringify(data); // 序列化
