@@ -1,5 +1,15 @@
 # 图片对比查看器
 
+## 效果图
+
+第一版本V1：
+
+![image-20200917224052040](E:%5C%E5%89%8D%E7%AB%AF%E5%AD%A6%E4%B9%A0%5CnodeStudy%5C%E9%A1%B9%E7%9B%AE%E6%BC%94%E7%BB%83%5C%E5%A4%9A%E5%BC%A0%E5%9B%BE%E7%89%87%E5%B1%95%E7%A4%BA%5Creadme.assets%5Cimage-20200917224052040.png)
+
+第二版本V2：
+
+![image-20200917224142927](E:%5C%E5%89%8D%E7%AB%AF%E5%AD%A6%E4%B9%A0%5CnodeStudy%5C%E9%A1%B9%E7%9B%AE%E6%BC%94%E7%BB%83%5C%E5%A4%9A%E5%BC%A0%E5%9B%BE%E7%89%87%E5%B1%95%E7%A4%BA%5Creadme.assets%5Cimage-20200917224142927.png)
+
 ## 组件选择
 
 **vue轮播插件vue-awesome-swiper**
