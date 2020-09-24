@@ -168,6 +168,48 @@ git reset HEAD~
 
 HEAD表示: 上一次提交
 
+### 6. 隐藏本地修改 pull远程
+
+参考文章：
+
+**git本地修改，远程库也修改了如何提交代码**
+
+<https://blog.csdn.net/qiang123___/article/details/97264666>
+
+1. 查看本地修改
+
+   ```shell
+   git status
+   ```
+
+2. 隐藏掉本地修改
+
+   ```
+   git stash
+   ```
+
+3. 从代码库拉取更新
+
+   ```shell
+   git pull
+   ```
+
+4. 恢复最新的进度到工作区
+
+   ```shell
+   git stash pop
+   ```
+
+   参考文章：使用git stash命令保存和恢复进度 <https://www.cnblogs.com/chen-cheng/p/9764651.html>
+
+5. 上传代码
+
+   ```shell
+   git add .
+   git commit -m ""
+   git push
+   ```
+
 ## svn操作
 
 ### 下载项目到本地
