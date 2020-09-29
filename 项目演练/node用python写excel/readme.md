@@ -2,7 +2,7 @@
 
 ## python-shell运行
 
-**原理:** node.js和python通过终端来交互
+**原理:** node.js和python通过**终端**来交互
 
 node 通过开启子进程,传送数据,数据是sys.stdout.python通过sys.stdin读取数据
 
@@ -283,6 +283,8 @@ chart.set_y_axis({'name':'Sample length(mm)'})
 
 ### pie饼图示例
 
+数据使用对象，然后用json序列化，传给python
+
  **pie.js**
 
 ```js
@@ -360,8 +362,6 @@ def createXls(data):
     'values':'=Sheet1!$B$17:$B$%s,'%(dataLen+17-1)
   })
 
-
-
   # 添加标题和坐标题目
   chart.set_title({'name': data["title"]})  #中文标题会乱码
   chart.set_x_axis({'name':data["X_axis_name"]}) 
@@ -400,7 +400,7 @@ let data = [
 
 
 
-
+node可以用对象类型的数据，对他进行json.stringify(obj)序列化，以字符串的形式传给py文件。然后python用json.loads还原成字典
 
 ## 传递数据的限制
 
@@ -562,6 +562,8 @@ nodejs的子进程有一个属性：[3]
   
 - python的数据类型?
 
+  - dict(词典) 类似于js的对象
+
   - List（列表）列表是写在方括号 **[]** 之间、用逗号分隔开的元素列表。
 
   - 元组（tuple）与列表类似，不同之处在于元组的元素不能修改。元组写在小括号 **()** 里，元素之间用逗号隔开。
@@ -581,7 +583,7 @@ nodejs的子进程有一个属性：[3]
 
 - python 字符串变量替换
 
-  - -- 已解决 通过字符串的拼接 或者%
+  - -- 已解决 通过字符串的拼接**str(age)** 或者%
   - 参考文章: <https://www.cnblogs.com/hyl2018/p/8970769.html>
 
 - node多维数组转字符串
@@ -595,6 +597,40 @@ nodejs的子进程有一个属性：[3]
   - 利用eval函数解析
   - eval: 解析字符串表达式,返回表达式的值
   - 参考文章: eval函数<https://www.runoob.com/python/python-func-eval.html>
+  
+- node调用python文件,输出中文乱码
+
+  - 参考文章:<https://www.jianshu.com/p/aafc3cfdac2a>
+  
+- python 文件之间传数据
+
+  - --暂时解决,想到方法是,保存文件来进行读取数据
+  - 但是这个项目目前想用的是 将py作为模块导入
+  - 参考文章 **Python模块化编程** :  <https://blog.csdn.net/qq_36119192/article/details/83619919>
+
+- python 数字1,2,3转字符A,B,C
+
+  - python-字母与ascii码的转换-利用数字转字母-利用字母转数字<https://blog.csdn.net/ifubing/article/details/94281187>
+
+    ```python
+    >>> chr(65)
+    A
+    >>> ord("A")
+    65
+    ```
+
+  - 遍历成数组
+
+    ```python
+    >>> a=[i for i in range(1,16)]
+    >>> a
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    >>>
+    ```
+
+    参考文章:【Python】如何向Python的列表里添加多个有顺序的数
+
+    <https://zhidao.baidu.com/question/690336253114783484.html>
 
 ## 参考文章
 
@@ -613,4 +649,6 @@ nodejs的子进程有一个属性：[3]
 - python3 sys.stdout 方法，sys.exit方法，sys.stdin 方法
 
   <https://blog.csdn.net/CityzenOldwang/article/details/78384412?utm_source=blogxgwz0>
+
+
 

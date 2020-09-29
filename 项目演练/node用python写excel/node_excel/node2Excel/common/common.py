@@ -56,7 +56,6 @@ def createXls(data):
   chart = workbook.add_chart({'type':chartType})
 
   # 配置第一个系列
-  dataLen = len(value1Data) 
   chart.add_series({
     'name':'=Sheet1!%s$%s'%(value1DataColumn,str(startDataRow)),
     'categories':'=Sheet1!$%s$%s:$%s$%s'%(startDataColumn, str(startDataRow+1),startDataColumn,dataEndRow),
